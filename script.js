@@ -3,14 +3,42 @@ var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
 
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'move') {
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'capture') {
+        osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    } else if (type === 'gameover') {
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+    }
+}
+
 window.addEventListener('DOMContentLoaded', (event) => {
     var randomBg = Math.floor(Math.random() * 3) + 1;
-    document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
-
-    document.getElementById('themeToggle').addEventListener('click', function() {
-        document.body.classList.toggle('dark-theme');
-        document.body.classList.toggle('light-theme');
-    });
+    document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jpg')`;
 
     document.getElementById('fullscreenToggle').addEventListener('click', function() {
         if (!document.fullscreenElement) {
@@ -53,10 +81,11 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 500);
+        window.setTimeout(makeAiMove, 300);
     }
 }
 
+// إعادة المباراة تبدأ الدور مباشرة دون الرجوع للقائمة الرئيسية
 function restartMatch() {
     document.getElementById('gameOverModal').style.display = 'none';
     startGame(playerColor);
@@ -76,14 +105,19 @@ function makeAiMove() {
     window.setTimeout(function() {
         var bestMove = calculateBestMove(4); 
         if (bestMove) {
+            var isCapture = bestMove.captured;
             game.move(bestMove);
             board.position(game.fen());
+            
+            if (isCapture) playSound('capture');
+            else playSound('move');
+
             highlightCheckSquare();
             updateStatus();
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 200);
+    }, 100);
 }
 
 function calculateBestMove(depth) {
@@ -176,6 +210,7 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 function onDrop(source, target) {
+    var targetPiece = game.get(target);
     var move = game.move({
         from: source,
         to: target,
@@ -183,6 +218,9 @@ function onDrop(source, target) {
     });
 
     if (move === null) return 'snapback';
+
+    if (targetPiece) playSound('capture');
+    else playSound('move');
 
     removeHighlights();
     highlightCheckSquare();
@@ -217,7 +255,6 @@ function removeCheckHighlights() {
     $('#board .square-55d63').removeClass('check-square');
 }
 
-// تخصيص المظهر والدلالات عند تمرير الماوس على القطعة
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
     var moves = game.moves({ square: square, verbose: true });
@@ -228,17 +265,14 @@ function onMouseoverSquare(square, piece) {
         var $sq = $('#board .square-' + targetSquare);
 
         if (moves[i].captured) {
-            // إكس حمراء للقتل
             if ($sq.length > 0 && $sq.find('.kill-cross').length === 0) {
                 $sq.append('<div class="kill-cross">✕</div>');
             }
         } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece && piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
-            // سهمين أزرقين لتبادل الأماكن / التبييت
             if ($sq.length > 0 && $sq.find('.castling-arrows').length === 0) {
                 $sq.append('<div class="castling-arrows"><span style="display:block;">➔</span><span style="display:block; margin-top:-8px;">⬅</span></div>');
             }
         } else {
-            // دائرة خضراء للحركات العادية
             if ($sq.length > 0 && $sq.find('.move-dot').length === 0) {
                 $sq.append('<div class="move-dot"></div>');
             }
@@ -264,7 +298,7 @@ function updateCapturedPieces() {
     for (var i = 0; i < history.length; i++) {
         if (history[i].captured) {
             var p = history[i].captured.toUpperCase();
-            var sym = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' }[p];
+            var sym = { 'P': 'P', 'N': 'N', 'B': 'B', 'R': 'R', 'Q': 'Q', 'K': 'K' }[p];
             if (history[i].color === 'w') blackCaptured.push(sym);
             else whiteCaptured.push(sym);
         }
@@ -279,6 +313,7 @@ function updateCapturedPieces() {
 
 function checkGameOver() {
     if (game.game_over()) {
+        playSound('gameover');
         var msg = "";
         if (game.in_checkmate()) {
             if (game.turn() === playerColor[0]) {
