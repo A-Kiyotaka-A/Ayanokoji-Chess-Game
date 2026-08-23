@@ -2,31 +2,36 @@ var board = null;
 var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
+var currentAiDepth = 1; // عمق افتراضي للذكاء الاصطناعي
 
 window.addEventListener('DOMContentLoaded', (event) => {
-    document.getElementById('themeToggle').addEventListener('click', function() {
-        document.body.classList.toggle('dark-theme');
-        document.body.classList.toggle('light-theme');
-    });
+    var randomBg = Math.floor(Math.random() * 3) + 1;
+    document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
 
-    document.getElementById('fullscreenToggle').addEventListener('click', function() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
+    if (window.location.pathname.includes('game.html')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lvl = parseInt(urlParams.get('level')) || 1;
+        
+        // تحديد صعوبة وعمق تفكير الخصم تلقائياً حسب رقم المستوى
+        if (lvl <= 3) {
+            currentAiDepth = 1; // مستويات سهلة
+        } else if (lvl <= 7) {
+            currentAiDepth = 2; // مستويات متوسطة
+        } else if (lvl <= 10) {
+            currentAiDepth = 3; // مستويات صعبة
         } else {
-            if (document.exitFullscreen) document.exitFullscreen();
+            currentAiDepth = 4; // مستوى أيانوكوجي الأسطوري
         }
-    });
 
-    document.getElementById('hintsToggle').addEventListener('click', function() {
-        showHints = !showHints;
-        this.style.opacity = showHints ? '1' : '0.4';
-    });
+        updateEnemyInfo(lvl);
+        startGame('white');
+    }
 });
 
 function startGame(color) {
     playerColor = color;
-    document.getElementById('startScreen').style.display = 'none';
-    document.getElementById('gameOverModal').style.display = 'none';
+    var gameOverModal = document.getElementById('gameOverModal');
+    if (gameOverModal) gameOverModal.style.display = 'none';
     
     game.reset();
     var config = {
@@ -40,7 +45,9 @@ function startGame(color) {
         onSnapEnd: function() { board.position(game.fen()); }
     };
     
-    board = Chessboard('board', config);
+    if (document.getElementById('board')) {
+        board = Chessboard('board', config);
+    }
     updateStatus();
     updateCapturedPieces();
 
@@ -50,22 +57,21 @@ function startGame(color) {
 }
 
 function restartMatch() {
-    document.getElementById('gameOverModal').style.display = 'none';
+    var gameOverModal = document.getElementById('gameOverModal');
+    if (gameOverModal) gameOverModal.style.display = 'none';
     startGame(playerColor);
 }
 
 function resetToMenu() {
-    document.getElementById('gameOverModal').style.display = 'none';
-    document.getElementById('startScreen').style.display = 'flex';
+    window.location.href = 'index.html';
 }
 
-// ذكاء اصطناعي مطور بعمق 4 لضمان شراسة هجومية عالية
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        var bestMove = calculateBestMove(4); // رفع العمق إلى 4 للتفكير المتقدم
+        var bestMove = calculateBestMove(currentAiDepth); 
         if (bestMove) {
             game.move(bestMove);
             board.position(game.fen());
@@ -84,7 +90,6 @@ function calculateBestMove(depth) {
     var bestValue = -999999;
     var bestMove = moves[0];
 
-    // ترتيب الحركات لتعزيز قوة وسرعة خوارزمية Alpha-Beta
     moves.sort(function(a, b) {
         return (b.captured ? 20 : 0) - (a.captured ? 20 : 0);
     });
@@ -132,7 +137,6 @@ function minimax(depth, alpha, beta, isMaximizing) {
     }
 }
 
-// تقييم متقدم يمنع التشتت ويجبره على حماية ملكه والسيطرة على الرقعة
 function evaluateBoard() {
     var totalEvaluation = 0;
     var boardState = game.board();
@@ -151,12 +155,10 @@ function getAdvancedPieceValue(piece, r, c) {
     var weights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
     var val = weights[piece.type];
 
-    // مكافأة إضافية للسيطرة على المربعات المركزية (لأن أيانوكوجي لا يترك المركز للصدفة)
     if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
         val += 25;
     }
 
-    // مكافأة لتقدم الجنود بحذر
     if (piece.type === 'p') {
         val += (piece.color === 'w' ? (7 - r) : r) * 8;
     }
@@ -217,19 +219,9 @@ function onMouseoverSquare(square, piece) {
     var moves = game.moves({ square: square, verbose: true });
     if (moves.length === 0) return;
 
-    colorSquare(square, 'rgba(100, 100, 100, 0.5)');
-
     for (var i = 0; i < moves.length; i++) {
         var targetSquare = moves[i].to;
-        var color = 'rgba(100, 100, 100, 0.5)';
-
-        if (moves[i].captured) {
-            color = 'rgba(142, 68, 173, 0.85);'; // بنفسجي للأكل
-        } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
-            color = 'rgba(46, 204, 113, 0.85)'; // أخضر للتبييت
-        }
-
-        colorSquare(targetSquare, color);
+        addMoveDot(targetSquare);
     }
 }
 
@@ -238,11 +230,15 @@ function onMouseoutSquare(square, piece) {
     highlightCheckSquare();
 }
 
-function colorSquare(square, color) {
-    $('#board .square-' + square).css('background-color', color);
+function addMoveDot(square) {
+    var $sq = $('#board .square-' + square);
+    if ($sq.length > 0 && $sq.find('.move-dot').length === 0) {
+        $sq.append('<div class="move-dot"></div>');
+    }
 }
 
 function removeHighlights() {
+    $('.move-dot').remove();
     $('#board .square-55d63').css('background-color', '');
 }
 
@@ -259,24 +255,90 @@ function updateCapturedPieces() {
         }
     }
 
-    if (playerColor === 'white') {
-        $('#playerCaptured').text(whiteCaptured.join(' '));
-        $('#opponentCaptured').text(blackCaptured.join(' '));
-    } else {
-        $('#playerCaptured').text(blackCaptured.join(' '));
-        $('#opponentCaptured').text(whiteCaptured.join(' '));
+    if ($('#playerCaptured').length) {
+        if (playerColor === 'white') {
+            $('#playerCaptured').text(whiteCaptured.join(' '));
+            $('#opponentCaptured').text(blackCaptured.join(' '));
+        } else {
+            $('#playerCaptured').text(blackCaptured.join(' '));
+            $('#opponentCaptured').text(whiteCaptured.join(' '));
+        }
     }
 }
 
 function checkGameOver() {
     if (game.game_over()) {
-        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو المعيار الوحيد." : "أنت عبقري أسطوري! لقد حطمت دفاعات أيانوكوجي!") : "تعادل!";
+        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك الخصم! استمر في التدريب." : "أنت عبقري أسطوري! لقد حطمت دفاعات الخصم!") : "تعادل!";
         $('#winnerText').text(msg);
-        document.getElementById('gameOverModal').style.display = 'flex';
+        var gameOverModal = document.getElementById('gameOverModal');
+        if (gameOverModal) gameOverModal.style.display = 'flex';
     }
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل عمق التحركات..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "الخصم يحلل عمق التحركات..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور الخصم...");
     $('#status').text(txt);
+}
+
+function selectLevel(lvl) {
+    window.location.href = `game.html?level=${lvl}`;
+}
+
+function goBackToLevels() {
+    window.location.href = 'index.html';
+}
+
+function openSettings() {
+    var modal = document.getElementById('settingsModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeSettings() {
+    var modal = document.getElementById('settingsModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function toggleAllLevels() {
+    alert("تم فتح جميع المستويات.");
+    closeSettings();
+}
+
+function restartGame() {
+    startGame(playerColor);
+}
+
+function toggleShowMoves() {
+    showHints = !showHints;
+    if (!showHints) {
+        removeHighlights();
+        alert("تم إيقاف عرض النقاط الخضراء للحركة.");
+    } else {
+        alert("تم تفعيل عرض النقاط الخضراء للحركة.");
+    }
+}
+
+function updateEnemyInfo(lvl) {
+    const characters = [
+        { name: "هونامي إيتشينوسي", level: "Lv. 100", img: "images/1.jpg" },
+        { name: "سوزوني هوريكيتا", level: "Lv. 300", img: "images/2.jpg" },
+        { name: "كاكيرو ريون", level: "Lv. 600", img: "images/3.jpg" },
+        { name: "ميابي ناجومو", level: "Lv. 1000", img: "images/4.jpg" },
+        { name: "كوهي كاتسوراغي", level: "Lv. 1400", img: "images/5.jpg" },
+        { name: "مانابو هوريكيتا", level: "Lv. 1800", img: "images/6.jpg" },
+        { name: "إيكا أماساوا", level: "Lv. 2200", img: "images/7.jpg" },
+        { name: "تاكويا ياغامي", level: "Lv. 2600", img: "images/8.jpg" },
+        { name: "روين كوانجي", level: "Lv. 2900", img: "images/9.jpg" },
+        { name: "أريسو ساكاياناغي", level: "Lv. 3200", img: "images/10.jpg" },
+        { name: "كيوتكا أيانوكوجي", level: "Lv. ????", img: "images/ayanokoji.png" }
+    ];
+
+    let index = parseInt(lvl) - 1;
+    if(index >= 0 && index < characters.length) {
+        const nameEl = document.getElementById('enemy-name');
+        const levelEl = document.getElementById('enemy-level');
+        const imgEl = document.getElementById('enemy-img');
+        if(nameEl) nameEl.innerText = characters[index].name;
+        if(levelEl) levelEl.innerText = characters[index].level;
+        if(imgEl) imgEl.src = characters[index].img;
+    }
 }
