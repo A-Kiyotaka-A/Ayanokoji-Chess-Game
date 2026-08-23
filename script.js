@@ -80,7 +80,7 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 100);
+        window.setTimeout(makeAiMove, 50);
     }
 }
 
@@ -95,14 +95,16 @@ function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
+    // سرعة فائقة جداً في اتخاذ القرار (رد فوري)
     window.setTimeout(function() {
-        // تم ضبط العمق على 2 مع خوارزمية فائقة السرعة تضمن ردة فعل فورية بدون أي تعليق أو بطء
         var bestMove = calculateBestMove(2); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             
-            // استخدام دالة التحريك المباشرة للرقعة لمنع أي وميض أو اختفاء للقطع
+            // تحريك القطعة في محرك الشطرنج أولاً
             game.move(bestMove);
+            
+            // تحديث الرقعة فوراً بدون أي تأخير أو انيميشن وهمي يسبب الاختفاء
             board.position(game.fen(), false); 
             
             if (isCapture) playSound('capture');
@@ -113,14 +115,13 @@ function makeAiMove() {
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 10); 
+    }, 5); 
 }
 
 function calculateBestMove(depth) {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
 
-    // ترتيب الحركات لإعطاء الأولوية لأكل القطع (زيادة الذكاء والسرعة)
     moves.sort(function(a, b) {
         return (b.captured ? 100 : 0) - (a.captured ? 100 : 0);
     });
