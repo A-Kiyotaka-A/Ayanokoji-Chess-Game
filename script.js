@@ -2,8 +2,37 @@ var board = null;
 var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
+var stockfish = null;
 
 window.addEventListener('DOMContentLoaded', (event) => {
+    // تهيئة محرك Stockfish عبر الرابط المباشر
+    try {
+        stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');
+        stockfish.onmessage = function(event) {
+            var line = event.data;
+            if (line.startsWith('bestmove')) {
+                var moveStr = line.split(' ')[1];
+                if (moveStr) {
+                    var move = game.move({
+                        from: moveStr.substring(0, 2),
+                        to: moveStr.substring(2, 4),
+                        promotion: moveStr.substring(4, 5) || 'q'
+                    });
+                    if (move) {
+                        board.position(game.fen());
+                        highlightCheckSquare();
+                        updateStatus();
+                        updateCapturedPieces();
+                        checkGameOver();
+                    }
+                }
+            }
+        };
+        stockfish.postMessage('uci');
+    } catch (e) {
+        console.error("خطأ في تشغيل Stockfish Worker:", e);
+    }
+
     document.getElementById('themeToggle').addEventListener('click', function() {
         document.body.classList.toggle('dark-theme');
         document.body.classList.toggle('light-theme');
@@ -59,88 +88,16 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// ذكاء اصطناعي عميق جداً ومستوى أسطوري (Minimax Algorithm بعمق 3 خطوات)
+// طلب الحركة من محرك Stockfish الخارق
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
-    window.setTimeout(function() {
-        var bestMove = calculateBestMove(3);
-        if (bestMove) {
-            game.move(bestMove);
-            board.position(game.fen());
-            highlightCheckSquare();
-            updateStatus();
-            updateCapturedPieces();
-            checkGameOver();
-        }
-    }, 400);
-}
-
-function calculateBestMove(depth) {
-    var moves = game.moves({ verbose: true });
-    if (moves.length === 0) return null;
-
-    var bestValue = -99999;
-    var bestMove = moves[0];
-
-    for (var i = 0; i < moves.length; i++) {
-        game.move(moves[i]);
-        var value = minimax(depth - 1, -100000, 100000, false);
-        game.undo();
-        if (value > bestValue) {
-            bestValue = value;
-            bestMove = moves[i];
-        }
+    if (stockfish) {
+        stockfish.postMessage('position fen ' + game.fen());
+        // تحديد قوة التفكير (يمكنك تعديل عمق البحث 'go depth 12' لزيادة الصعوبة)
+        stockfish.postMessage('go depth 12');
     }
-    return bestMove;
-}
-
-function minimax(depth, alpha, beta, isMaximizing) {
-    if (depth === 0 || game.game_over()) {
-        return evaluateBoard();
-    }
-
-    var moves = game.moves({ verbose: true });
-    if (isMaximizing) {
-        var maxEval = -99999;
-        for (var i = 0; i < moves.length; i++) {
-            game.move(moves[i]);
-            var evaluation = minimax(depth - 1, alpha, beta, false);
-            game.undo();
-            maxEval = Math.max(maxEval, evaluation);
-            alpha = Math.max(alpha, evaluation);
-            if (beta <= alpha) break;
-        }
-        return maxEval;
-    } else {
-        var minEval = 99999;
-        for (var i = 0; i < moves.length; i++) {
-            game.move(moves[i]);
-            var evaluation = minimax(depth - 1, alpha, beta, true);
-            game.undo();
-            minEval = Math.min(minEval, evaluation);
-            beta = Math.min(beta, evaluation);
-            if (beta <= alpha) break;
-        }
-        return minEval;
-    }
-}
-
-function evaluateBoard() {
-    var boardState = game.board();
-    var totalEvaluation = 0;
-    for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-            var piece = boardState[i][j];
-            if (piece) {
-                var weights = { p: 10, n: 35, b: 35, r: 55, q: 100, k: 1000 };
-                var val = weights[piece.type] || 0;
-                totalEvaluation += (piece.color === 'w' ? val : -val);
-            }
-        }
-    }
-    return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
 }
 
 function onDragStart(source, piece, position, orientation) {
@@ -180,7 +137,7 @@ function highlightCheckSquare() {
                 var piece = boardState[r][c];
                 if (piece && piece.type === 'k' && piece.color === kingColor) {
                     var squareName = String.fromCharCode(97 + c) + (8 - r);
-                    $('#board .square-' + squareName).addClass('highlight-check');
+                    $('#board .square-' + squareName).css('background-color', 'rgba(231, 76, 60, 0.8)');
                 }
             }
         }
@@ -188,30 +145,28 @@ function highlightCheckSquare() {
 }
 
 function removeCheckHighlights() {
-    $('#board .square-55d63').removeClass('highlight-check');
+    $('#board .square-55d63').css('background-color', '');
 }
 
-// عرض الحركات مع ألوان دقيقة: أزرق/بنفسجي للأكل، أخضر للتبييت، ورمادي للحركات العادية
+// تلوين مربعات الحركات: رمادي عادي، بنفسجي للأكل، أخضر للتبييت
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
     var moves = game.moves({ square: square, verbose: true });
     if (moves.length === 0) return;
 
-    greySquare(square, 'highlight-move');
+    colorSquare(square, 'rgba(100, 100, 100, 0.5)');
+
     for (var i = 0; i < moves.length; i++) {
         var targetSquare = moves[i].to;
-        var cssClass = 'highlight-move';
+        var color = 'rgba(100, 100, 100, 0.5)';
 
-        // إذا كانت الحركة أكل قطعة
         if (moves[i].captured) {
-            cssClass = 'highlight-capture'; // أزرق / بنفسجي
-        }
-        // إذا كانت حركة استبدال/تبييت (Castling)
-        else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
-            cssClass = 'highlight-castle'; // أخضر
+            color = 'rgba(142, 68, 173, 0.85)'; // بنفسجي للأكل (الصيد)
+        } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
+            color = 'rgba(46, 204, 113, 0.85)'; // أخضر للتبييت
         }
 
-        greySquare(targetSquare, cssClass);
+        colorSquare(targetSquare, color);
     }
 }
 
@@ -220,12 +175,12 @@ function onMouseoutSquare(square, piece) {
     highlightCheckSquare();
 }
 
-function greySquare(square, className) {
-    $('#board .square-' + square).addClass(className);
+function colorSquare(square, color) {
+    $('#board .square-' + square).css('background-color', color);
 }
 
 function removeHighlights() {
-    $('#board .square-55d63').removeClass('highlight-move highlight-capture highlight-castle');
+    $('#board .square-55d63').css('background-color', '');
 }
 
 function updateCapturedPieces() {
@@ -252,13 +207,13 @@ function updateCapturedPieces() {
 
 function checkGameOver() {
     if (game.game_over()) {
-        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو المعيار الوحيد." : "أنت عبقري أسطوري! لقد هزمت أيانوكوجي!") : "تعادل!";
+        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو المعيار الوحيد." : "أنت عبقري أسطوري! لقد هزمت Stockfish وأيانوكوجي معا!") : "تعادل!";
         $('#winnerText').text(msg);
         document.getElementById('gameOverModal').style.display = 'flex';
     }
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الأنماط بدقة..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "Stockfish (أيانوكوجي) يحسب أعماق استراتيجية..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
