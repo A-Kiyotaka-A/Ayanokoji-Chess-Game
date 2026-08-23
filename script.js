@@ -72,8 +72,7 @@ function startGame(color) {
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
-        onMouseoutSquare: onMouseoutSquare,
-        // تم إزالة snapSpeed المسبب للاختفاء لجعل الاستجابة فورية ونظيفة
+        onMouseoutSquare: onMouseoutSquare
     };
     
     board = Chessboard('board', config);
@@ -81,7 +80,7 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 50);
+        window.setTimeout(makeAiMove, 100);
     }
 }
 
@@ -97,12 +96,14 @@ function makeAiMove() {
     updateStatus(true);
 
     window.setTimeout(function() {
-        // تم ضبط العمق على 3 مع خوارزمية سريعة جداً وذكية لضمان عدم حدوث أي بطء
-        var bestMove = calculateBestMove(3); 
+        // تم ضبط العمق على 2 مع خوارزمية فائقة السرعة تضمن ردة فعل فورية بدون أي تعليق أو بطء
+        var bestMove = calculateBestMove(2); 
         if (bestMove) {
             var isCapture = bestMove.captured;
+            
+            // استخدام دالة التحريك المباشرة للرقعة لمنع أي وميض أو اختفاء للقطع
             game.move(bestMove);
-            board.position(game.fen()); // تحديث فوري بدون تقطيع أو اختفاء
+            board.position(game.fen(), false); 
             
             if (isCapture) playSound('capture');
             else playSound('move');
@@ -119,6 +120,7 @@ function calculateBestMove(depth) {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
 
+    // ترتيب الحركات لإعطاء الأولوية لأكل القطع (زيادة الذكاء والسرعة)
     moves.sort(function(a, b) {
         return (b.captured ? 100 : 0) - (a.captured ? 100 : 0);
     });
@@ -176,26 +178,13 @@ function evaluateBoard() {
         for (var j = 0; j < 8; j++) {
             var piece = boardState[i][j];
             if (piece) {
-                totalEvaluation += getAdvancedPieceValue(piece, i, j);
+                var weights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+                var val = weights[piece.type];
+                totalEvaluation += (piece.color === 'w' ? val : -val);
             }
         }
     }
     return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
-}
-
-function getAdvancedPieceValue(piece, r, c) {
-    var weights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
-    var val = weights[piece.type];
-
-    if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
-        val += 35;
-    }
-
-    if (piece.type === 'p') {
-        val += (piece.color === 'w' ? (7 - r) : r) * 10;
-    }
-
-    return piece.color === 'w' ? val : -val;
 }
 
 function onDragStart(source, piece, position, orientation) {
@@ -277,10 +266,6 @@ function onMouseoverSquare(square, piece) {
 
 function onMouseoutSquare(square, piece) {
     removeHighlights();
-    highlightCheckShield(); // تم التصحيح تفادياً لأي خطأ
-}
-
-function highlightCheckShield() {
     highlightCheckSquare();
 }
 
