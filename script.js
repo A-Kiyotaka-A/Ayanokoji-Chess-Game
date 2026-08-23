@@ -59,14 +59,13 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// ذكاء اصطناعي شرس يعتمد على عمق بحث استراتيجي
+// ذكاء اصطناعي داخلي قوي ومتوافق تماماً مع المتصفح
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        // عمق 4 يضمن تفكيراً عميقاً ومحسوباً بدقة متناهية
-        var bestMove = calculateBestMove(4); 
+        var bestMove = calculateBestMove(3); // عمق 3 لضمان سرعة واستقرار الحركة
         if (bestMove) {
             game.move(bestMove);
             board.position(game.fen());
@@ -85,9 +84,8 @@ function calculateBestMove(depth) {
     var bestValue = -999999;
     var bestMove = moves[0];
 
-    // ترتيب الحركات لتسريع البحث الأعمق والأقوى
     moves.sort(function(a, b) {
-        return (b.captured ? 20 : 0) - (a.captured ? 20 : 0);
+        return (b.captured ? 10 : 0) - (a.captured ? 10 : 0);
     });
 
     for (var i = 0; i < moves.length; i++) {
@@ -133,7 +131,6 @@ function minimax(depth, alpha, beta, isMaximizing) {
     }
 }
 
-// جدول تقييم متطور يضمن السيطرة التامة على الرقعة والوسط
 function evaluateBoard() {
     var totalEvaluation = 0;
     var boardState = game.board();
@@ -141,23 +138,16 @@ function evaluateBoard() {
         for (var j = 0; j < 8; j++) {
             var piece = boardState[i][j];
             if (piece) {
-                totalEvaluation += getPieceValue(piece, i, j);
+                totalEvaluation += getPieceValue(piece);
             }
         }
     }
     return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
 }
 
-function getPieceValue(piece, r, c) {
-    // تقييم أساسي مدعم بالسيطرة على المربعات المركزية
+function getPieceValue(piece) {
     var weights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
     var val = weights[piece.type];
-    
-    // مكافأة إضافية لتقدم القطع نحو الوسط
-    if (piece.type === 'p') {
-        val += (piece.color === 'w' ? (7 - r) : r) * 5;
-    }
-    
     return piece.color === 'w' ? val : -val;
 }
 
@@ -209,35 +199,13 @@ function removeCheckHighlights() {
     $('#board .square-55d63').css('background-color', '');
 }
 
-// تلوين دقيق لمربعات الحركات (رمادي للحركة، بنفسجي للصيد/الأكل، أخضر للتبييت)
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
-    var moves = game.moves({ square: square, verbose: true });
-    if (moves.length === 0) return;
-
-    colorSquare(square, 'rgba(100, 100, 100, 0.5)');
-
-    for (var i = 0; i < moves.length; i++) {
-        var targetSquare = moves[i].to;
-        var color = 'rgba(100, 100, 100, 0.5)';
-
-        if (moves[i].captured) {
-            color = 'rgba(142, 68, 173, 0.85)'; // بنفسجي لمربعات الصيد (الأكل)
-        } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
-            color = 'rgba(46, 204, 113, 0.85)'; // أخضر لمربعات التبييت
-        }
-
-        colorSquare(targetSquare, color);
-    }
 }
 
 function onMouseoutSquare(square, piece) {
     removeHighlights();
     highlightCheckSquare();
-}
-
-function colorSquare(square, color) {
-    $('#board .square-' + square).css('background-color', color);
 }
 
 function removeHighlights() {
@@ -268,13 +236,13 @@ function updateCapturedPieces() {
 
 function checkGameOver() {
     if (game.game_over()) {
-        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو المعيار الوحيد." : "أنت عبقري أسطوري! لقد هزمت أيانوكوجي في عقر داره!") : "تعادل!";
+        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو المعيار الوحيد." : "أنت عبقري أسطوري! لقد هزمت أيانوكوجي!") : "تعادل!";
         $('#winnerText').text(msg);
         document.getElementById('gameOverModal').style.display = 'flex';
     }
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحسب خطواتك القادمة..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يدرس تحركاتك..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
