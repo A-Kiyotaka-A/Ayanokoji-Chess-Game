@@ -14,7 +14,7 @@
     <div id="startScreen" class="start-screen" style="display: flex;">
         <div class="start-box">
             <h2>شطرنج كيوتاكا أيانوكوجي</h2>
-            <p>اختر لون القطع للبدء:</p>
+            <p>اختر لون القطع لمواجهة العبقري:</p>
             <div class="color-selection">
                 <button class="color-btn" onclick="startGame('white')">⚪ الأبيض (أنت تبدأ أولاً)</button>
                 <button class="color-btn" onclick="startGame('black')">⚫ الأسود (أيانوكوجي يبدأ أولاً)</button>
@@ -27,15 +27,16 @@
         <div class="modal-box">
             <h2 id="winnerTitle">انتهت اللعبة</h2>
             <p id="winnerText"></p>
-            <button class="action-btn" onclick="resetToMenu()">لعبة جديدة</button>
+            <button class="action-btn" onclick="resetToMenu()">القائمة الرئيسية</button>
         </div>
     </div>
 
-    <!-- لوحة الأزرار (مظهر، ملء شاشة، مساعدة) -->
+    <!-- لوحة الأزرار (مظهر، ملء شاشة، مصباح الحركات، إعادة) -->
     <div class="settings-panel">
         <button id="themeToggle" class="setting-btn" title="تغيير المظهر">🌓</button>
         <button id="fullscreenToggle" class="setting-btn" title="تكبير الشاشة">⛶</button>
-        <button id="hintsToggle" class="setting-btn" title="إظهار/إخفاء الحركات">💡</button>
+        <button id="hintsToggle" class="setting-btn" title="إظهار/إخفاء مسار الحركات">♟️ 💡</button>
+        <button id="resetMatchBtn" class="setting-btn" title="إعادة المباراة" onclick="restartMatch()">🔄 إعادة</button>
     </div>
 
     <div class="main-container">
@@ -46,8 +47,8 @@
                 <div class="status-dot"></div>
             </div>
             <div class="profile-info">
-                <h3>أيانوكوجي كيوتاكا</h3>
-                <span class="sub-text quote-text">"في هذا العالم، الفوز هو كل شيء؛ طالما أنني أفوز في النهاية، فهذا هو الأهم"</span>
+                <h3>أيانوكوجي كيوتاكا <span class="badge">مستوى 3000+</span></h3>
+                <span class="sub-text quote-text">"في نهاية المطاف، البشر ليسوا سوى أدوات. الفوز هو المعيار الوحيد."</span>
                 <div id="opponentCaptured" class="captured-pieces"></div>
             </div>
         </div>
@@ -56,7 +57,7 @@
         <div class="board-wrapper">
             <div id="board" style="width: 380px;"></div>
             <div class="game-controls">
-                <button class="action-btn" onclick="resetToMenu()">القائمة الرئيسية</button>
+                <button class="action-btn" onclick="resetToMenu()">القائمة</button>
                 <span id="status">الحالة: جاهز</span>
             </div>
         </div>
