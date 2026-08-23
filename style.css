@@ -282,3 +282,10 @@ body.dark-theme {
 .chessboard-63f37 .highlight1-32417 {
     display: block !important;
 }
+.piece-417db, 
+.ui-draggable-dragging {
+    z-index: 9999 !important;
+    opacity: 1 !important;
+    display: block !important;
+    pointer-events: none; /* يسمح للماوس بالتفاعل مع المربعات تحته أثناء السحب */
+}
