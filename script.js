@@ -92,8 +92,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    // إزالة false للسماح بالأنيميشن الطبيعي
-                    board.position(game.fen());
+                    // استخدام board.move() لأنيميشن سلس ومحدد
+                    board.move(move.from + move.to);
                     if (targetPiece) playSound('capture');
                     else playSound('move');
 
@@ -148,6 +148,7 @@ function startGame(color) {
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
         snapbackSpeed: 50,
         snapSpeed: 50,
+        moveSpeed: 200, // سرعة الأنيميشن للحركات (أسرع وأكثر سلاسة)
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -184,8 +185,8 @@ function makeAiMove() {
 
             window.setTimeout(function() {
                 game.move(bestMove);
-                // إزالة false للسماح بالأنيميشن الطبيعي للروبوت
-                board.position(game.fen());
+                // استخدام board.move() لأنيميشن سلس ومحدد للروبوت
+                board.move(bestMove.from + bestMove.to);
                 
                 if (isCapture) playSound('capture');
                 else playSound('move');
@@ -368,8 +369,8 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
-    // إزالة false للسماح بالأنيميشن الطبيعي عند الإفلات
-    board.position(game.fen());
+    // استخدام board.move() لأنيميشن سلس عند الإفلات
+    board.move(move.from + move.to);
 
     if (targetPiece) playSound('capture');
     else playSound('move');
