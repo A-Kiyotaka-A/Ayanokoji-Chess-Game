@@ -1,10 +1,10 @@
 :root {
-    --bg-color: #090a0f;
-    --panel-bg: rgba(15, 18, 25, 0.94);
-    --neon-orange: #f39c12;
-    --neon-yellow: #f1c40f;
-    --neon-red: #e74c3c;
-    --text-color: #e1e4e8;
+    --ayanokoji-dark: #231912;     /* بديل الأسود: لون بني كستنائي غامق مستوحى من شعر أيانوكوجي */
+    --ayanokoji-panel: rgba(35, 25, 18, 0.92); 
+    --ayanokoji-brown: #5c3a21;    /* تدرج بني دافئ */
+    --ayanokoji-gold: #e2b13c;     /* أصفر ذهبي متناسق */
+    --ayanokoji-red: #c0392b;      /* أحمر دقيق */
+    --text-color: #f3efe6;
 }
 
 body.dark-theme {
@@ -27,20 +27,20 @@ body.dark-theme {
     width: 90px;
     height: 90px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+    background: linear-gradient(135deg, var(--ayanokoji-brown), var(--ayanokoji-gold));
     border: none;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 0 auto;
-    box-shadow: 0 0 25px rgba(243, 156, 18, 0.6);
+    box-shadow: 0 0 25px rgba(92, 58, 33, 0.7);
     transition: 0.3s;
 }
 
 .play-trigger-btn:hover {
     transform: scale(1.1);
-    box-shadow: 0 0 35px var(--neon-yellow);
+    box-shadow: 0 0 35px var(--ayanokoji-gold);
 }
 
 .play-triangle {
@@ -48,7 +48,7 @@ body.dark-theme {
     height: 0;
     border-top: 14px solid transparent;
     border-bottom: 14px solid transparent;
-    border-left: 22px solid #000;
+    border-left: 22px solid var(--ayanokoji-dark);
     margin-left: 4px;
 }
 
@@ -71,11 +71,11 @@ body.dark-theme {
 }
 
 .board-wrapper {
-    background: var(--panel-bg);
+    background: var(--ayanokoji-panel);
     padding: 15px;
     border-radius: 20px;
-    border: 2px solid rgba(243, 156, 18, 0.5);
-    box-shadow: 0 0 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(243, 156, 18, 0.15);
+    border: 2px solid rgba(226, 177, 60, 0.4);
+    box-shadow: 0 0 35px rgba(25, 15, 8, 0.9), 0 0 20px rgba(92, 58, 33, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -97,14 +97,15 @@ body.dark-theme {
 
 #status {
     font-size: 0.95rem;
-    color: var(--neon-yellow);
+    color: var(--ayanokoji-gold);
     font-weight: bold;
-    text-shadow: 0 0 5px rgba(241, 196, 15, 0.4);
+    text-shadow: 0 0 5px rgba(226, 177, 60, 0.4);
 }
 
+/* شريط الأدوات تحت الرقعة تماماً */
 .tools-bar {
-    background: var(--panel-bg);
-    border: 2px solid var(--neon-orange);
+    background: var(--ayanokoji-panel);
+    border: 2px solid var(--ayanokoji-brown);
     border-radius: 15px;
     padding: 10px 15px;
     display: flex;
@@ -112,7 +113,7 @@ body.dark-theme {
     width: 100%;
     box-sizing: border-box;
     justify-content: space-between;
-    box-shadow: 0 0 20px rgba(243, 156, 18, 0.2);
+    box-shadow: 0 0 20px rgba(35, 25, 18, 0.5);
 }
 
 .right-side-panel {
@@ -123,15 +124,15 @@ body.dark-theme {
 }
 
 .opponent-card {
-    background: var(--panel-bg);
-    border: 2px solid var(--neon-red);
+    background: var(--ayanokoji-panel);
+    border: 2px solid var(--ayanokoji-brown);
     border-radius: 20px;
     padding: 25px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    box-shadow: 0 0 25px rgba(231, 76, 60, 0.3), inset 0 0 15px rgba(243, 156, 18, 0.1);
+    box-shadow: 0 0 25px rgba(92, 58, 33, 0.4), inset 0 0 15px rgba(35, 25, 18, 0.6);
     backdrop-filter: blur(12px);
     height: 100%;
     box-sizing: border-box;
@@ -143,8 +144,8 @@ body.dark-theme {
     height: 130px;
     border-radius: 50%;
     overflow: hidden;
-    border: 3px solid var(--neon-orange);
-    box-shadow: 0 0 15px var(--neon-orange);
+    border: 3px solid var(--ayanokoji-gold);
+    box-shadow: 0 0 15px rgba(226, 177, 60, 0.6);
     margin-bottom: 15px;
 }
 
@@ -157,23 +158,23 @@ body.dark-theme {
 .opponent-card h3 {
     color: #fff;
     font-size: 1.4rem;
-    text-shadow: 0 0 8px var(--neon-red);
+    text-shadow: 0 0 8px var(--ayanokoji-brown);
     margin: 10px 0;
 }
 
 .quote-text {
     font-size: 0.9rem;
-    color: #f1c40f;
+    color: var(--ayanokoji-gold);
     font-style: italic;
     margin-top: 15px;
     line-height: 1.5;
-    text-shadow: 0 0 5px rgba(241, 196, 15, 0.3);
+    text-shadow: 0 0 5px rgba(226, 177, 60, 0.3);
 }
 
 .action-btn, .setting-btn {
-    background: linear-gradient(135deg, #1f242d, #141821);
-    color: #f1c40f;
-    border: 1px solid var(--neon-orange);
+    background: linear-gradient(135deg, #2d2016, #1c130d);
+    color: var(--ayanokoji-gold);
+    border: 1px solid var(--ayanokoji-brown);
     padding: 8px 12px;
     border-radius: 8px;
     cursor: pointer;
@@ -185,15 +186,15 @@ body.dark-theme {
 }
 
 .action-btn:hover, .setting-btn:hover {
-    background: var(--neon-orange);
-    color: #000;
-    box-shadow: 0 0 15px var(--neon-orange);
+    background: var(--ayanokoji-brown);
+    color: #fff;
+    box-shadow: 0 0 15px var(--ayanokoji-brown);
 }
 
 .legendary-btn {
-    background: linear-gradient(135deg, #e74c3c, #d35400);
+    background: linear-gradient(135deg, #7a431d, #5c3a21);
     color: white;
-    border: 1px solid var(--neon-yellow);
+    border: 1px solid var(--ayanokoji-gold);
 }
 
 .captured-pieces {
@@ -201,7 +202,7 @@ body.dark-theme {
     min-height: 35px;
     margin-top: 8px;
     letter-spacing: 3px;
-    color: var(--neon-yellow);
+    color: var(--ayanokoji-gold);
 }
 
 .start-screen, .game-over-modal {
@@ -210,7 +211,7 @@ body.dark-theme {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(9, 10, 15, 0.92);
+    background: rgba(20, 14, 10, 0.94);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -219,12 +220,12 @@ body.dark-theme {
 }
 
 .start-box, .modal-box {
-    background: #11151d;
-    border: 2px solid var(--neon-orange);
+    background: var(--ayanokoji-dark);
+    border: 2px solid var(--ayanokoji-brown);
     padding: 40px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 0 40px rgba(243, 156, 18, 0.3);
+    box-shadow: 0 0 40px rgba(92, 58, 33, 0.5);
     max-width: 420px;
 }
 
@@ -238,8 +239,8 @@ body.dark-theme {
 .color-btn {
     padding: 12px;
     border-radius: 10px;
-    border: 1px solid var(--neon-yellow);
-    background: #1a202c;
+    border: 1px solid var(--ayanokoji-gold);
+    background: #2b1e16;
     color: #fff;
     cursor: pointer;
     font-weight: bold;
@@ -247,8 +248,8 @@ body.dark-theme {
 }
 
 .color-btn:hover {
-    background: var(--neon-yellow);
-    color: #000;
+    background: var(--ayanokoji-gold);
+    color: var(--ayanokoji-dark);
 }
 
 .move-dot {
