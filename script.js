@@ -92,8 +92,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    // استخدام board.move() لأنيميشن سلس ومحدد
-                    board.move(move.from + move.to);
+                    // بدون false = أنيميشن انزلاق طبيعي عند النقر
+                    board.position(game.fen());
                     if (targetPiece) playSound('capture');
                     else playSound('move');
 
@@ -148,7 +148,7 @@ function startGame(color) {
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
         snapbackSpeed: 50,
         snapSpeed: 50,
-        moveSpeed: 200, // سرعة الأنيميشن للحركات (أسرع وأكثر سلاسة)
+        moveSpeed: 300, // سرعة أنيميشن حركة القطع (300 مللي ثانية = سلس ومريح)
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -185,8 +185,8 @@ function makeAiMove() {
 
             window.setTimeout(function() {
                 game.move(bestMove);
-                // استخدام board.move() لأنيميشن سلس ومحدد للروبوت
-                board.move(bestMove.from + bestMove.to);
+                // بدون false = أنيميشن انزلاق طبيعي للروبوت
+                board.position(game.fen());
                 
                 if (isCapture) playSound('capture');
                 else playSound('move');
@@ -369,8 +369,9 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
-    // استخدام board.move() لأنيميشن سلس عند الإفلات
-    board.move(move.from + move.to);
+    // مهم جداً: نستخدم false هنا لأن القطعة موجودة بالفعل في مكانها بصرياً بسبب السحب
+    // استخدام false هنا يمنع مشكلة "القطعتين فوق بعضهما" عند الأكل
+    board.position(game.fen(), false);
 
     if (targetPiece) playSound('capture');
     else playSound('move');
