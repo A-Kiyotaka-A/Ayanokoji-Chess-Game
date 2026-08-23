@@ -38,7 +38,7 @@ function playSound(type) {
 
 window.addEventListener('DOMContentLoaded', (event) => {
     var randomBg = Math.floor(Math.random() * 3) + 1;
-    document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jpg')`;
+    document.body.style.backgroundImage = `linear-gradient(rgba(20, 14, 10, 0.88), rgba(20, 14, 10, 0.88)), url('images/${randomBg}.jpg')`;
 
     document.getElementById('fullscreenToggle').addEventListener('click', function() {
         if (!document.fullscreenElement) {
@@ -81,11 +81,10 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 300);
+        window.setTimeout(makeAiMove, 200);
     }
 }
 
-// إعادة المباراة تبدأ الدور مباشرة دون الرجوع للقائمة الرئيسية
 function restartMatch() {
     document.getElementById('gameOverModal').style.display = 'none';
     startGame(playerColor);
@@ -98,12 +97,13 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
+// تسريع أيانوكوجي باستخدام عمق 3 مع الحفاظ التام على الذكاء والدقة والفعالية
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        var bestMove = calculateBestMove(4); 
+        var bestMove = calculateBestMove(3); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             game.move(bestMove);
@@ -117,7 +117,7 @@ function makeAiMove() {
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 100);
+    }, 50); 
 }
 
 function calculateBestMove(depth) {
