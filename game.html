@@ -4,110 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معركة شطرنج النخبة</title>
-    <link rel="icon" type="image/png" href="images/favicon.png">
     <link rel="stylesheet" href="style.css">
+    <!-- مكتبات الشطرنج الأساسية لضمان ظهور الرقعة والقطع -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
 </head>
 <body class="dark-theme">
 
-    <button class="bottom-left-settings" onclick="goBackToLevels()">المستويات</button>
+    <button class="bottom-left-settings" onclick="goBackToLevels()"></button>
 
     <div class="game-container">
         
         <div class="matchup-header">
             <div class="enemy-profile">
-                <div class="avatar-box"><img id="enemy-img" src="images/1.jpg" alt="" class="char-avatar"></div>
+                <div class="avatar-box"><img id="enemy-img" src="" class="char-avatar"></div>
                 <div>
                     <h3 id="enemy-name" style="margin:0 0 5px 0; color:#fff;">الخصم</h3>
                     <span class="level-num" id="enemy-level">Lv. --</span>
                 </div>
             </div>
-            <div class="vs-badge">معركة استراتيجية</div>
+            <div style="color:var(--neon-yellow); font-weight:bold;">معركة</div>
         </div>
 
-        <!-- رقعة الشطرنج الحقيقية مع تفعيل النقاط الخضراء للحركة -->
-        <div class="chessboard-area" id="chessboard"></div>
+        <div class="status-box" id="status">جاري التحميل...</div>
+
+        <!-- رقعة الشطرنج الحقيقية -->
+        <div id="board"></div>
 
         <div class="control-bar">
-            <button class="game-btn" onclick="restartGame()">إعادة المستوى</button>
-            <button class="game-btn" onclick="toggleShowMoves()">إظهار الحركات</button>
+            <button class="icon-btn restart-icon" onclick="restartGame()" title="إعادة المستوى"></button>
+            <button class="icon-btn hint-icon" onclick="toggleShowMoves()" title="إظهار الحركات"></button>
         </div>
 
     </div>
 
-    <script>
-        let showMovesActive = true;
+    <div id="gameOverModal" class="game-over-modal">
+        <div class="modal-content">
+            <h2 id="winnerText" style="color:var(--neon-yellow)">نتيجة المعركة</h2>
+            <button style="background:var(--neon-orange); color:#000; border:none; padding:10px 20px; font-weight:bold; border-radius:6px; cursor:pointer; margin-top:15px;" onclick="restartMatch()">إعادة</button>
+        </div>
+    </div>
 
-        window.addEventListener('DOMContentLoaded', (event) => {
-            var randomBg = Math.floor(Math.random() * 3) + 1;
-            document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const lvl = urlParams.get('level') || 1;
-            updateEnemyInfo(lvl);
-            buildChessBoard();
-        });
-
-        function updateEnemyInfo(lvl) {
-            const characters = [
-                { name: "هونامي إيتشينوسي", level: "Lv. 100", img: "images/1.jpg" },
-                { name: "سوزوني هوريكيتا", level: "Lv. 300", img: "images/2.jpg" },
-                { name: "كاكيرو ريون", level: "Lv. 600", img: "images/3.jpg" },
-                { name: "ميابي ناجومو", level: "Lv. 1000", img: "images/4.jpg" },
-                { name: "كوهي كاتسوراغي", level: "Lv. 1400", img: "images/5.jpg" },
-                { name: "مانابو هوريكيتا", level: "Lv. 1800", img: "images/6.jpg" },
-                { name: "إيكا أماساوا", level: "Lv. 2200", img: "images/7.jpg" },
-                { name: "تاكويا ياغامي", level: "Lv. 2600", img: "images/8.jpg" },
-                { name: "روين كوانجي", level: "Lv. 2900", img: "images/9.jpg" },
-                { name: "أريسو ساكاياناغي", level: "Lv. 3200", img: "images/10.jpg" },
-                { name: "كيوتكا أيانوكوجي", level: "Lv. ????", img: "images/ayanokoji.png" }
-            ];
-
-            let index = parseInt(lvl) - 1;
-            if(index >= 0 && index < characters.length) {
-                document.getElementById('enemy-name').innerText = characters[index].name;
-                document.getElementById('enemy-level').innerText = characters[index].level;
-                document.getElementById('enemy-img').src = characters[index].img;
-            }
-        }
-
-        function buildChessBoard() {
-            const board = document.getElementById('chessboard');
-            board.innerHTML = '';
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const square = document.createElement('div');
-                    square.className = `chess-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-                    
-                    square.onclick = function() {
-                        if(!showMovesActive) return;
-                        document.querySelectorAll('.move-dot').forEach(d => d.remove());
-                        const dot = document.createElement('div');
-                        dot.className = 'move-dot';
-                        square.appendChild(dot);
-                    };
-
-                    board.appendChild(square);
-                }
-            }
-        }
-
-        function restartGame() { 
-            buildChessBoard(); 
-        }
-
-        function toggleShowMoves() {
-            showMovesActive = !showMovesActive;
-            if(!showMovesActive) {
-                document.querySelectorAll('.move-dot').forEach(d => d.remove());
-                alert("تم إيقاف عرض النقاط الخضراء للحركة.");
-            } else {
-                alert("تم تفعيل عرض النقاط الخضراء للحركة.");
-            }
-        }
-
-        function goBackToLevels() { 
-            window.location.href = 'index.html'; 
-        }
-    </script>
+    <!-- جافاسكريبت المكتبات المطلوبة لرسم الرقعة -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
