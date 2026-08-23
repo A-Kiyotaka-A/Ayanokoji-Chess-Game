@@ -22,21 +22,22 @@
         </div>
     </div>
 
-    <!-- نافذة كش مات -->
+    <!-- نافذة نهاية اللعبة -->
     <div id="gameOverModal" class="game-over-modal" style="display: none;">
         <div class="modal-box">
             <h2 id="winnerTitle">انتهت اللعبة</h2>
             <p id="winnerText"></p>
-            <button class="action-btn" onclick="resetToMenu()">القائمة الرئيسية</button>
+            <button class="action-btn" onclick="restartMatch()">إعادة المباراة</button>
+            <button class="action-btn secondary-btn" onclick="resetToMenu()">القائمة الرئيسية</button>
         </div>
     </div>
 
-    <!-- لوحة الأزرار (مظهر، ملء شاشة، مصباح الحركات، إعادة) -->
+    <!-- لوحة الأزرار الأسطورية -->
     <div class="settings-panel">
         <button id="themeToggle" class="setting-btn" title="تغيير المظهر">🌓</button>
         <button id="fullscreenToggle" class="setting-btn" title="تكبير الشاشة">⛶</button>
-        <button id="hintsToggle" class="setting-btn" title="إظهار/إخفاء مسار الحركات">♟️ 💡</button>
-        <button id="resetMatchBtn" class="setting-btn" title="إعادة المباراة" onclick="restartMatch()">🔄 إعادة</button>
+        <button id="hintsToggle" class="setting-btn" title="إظهار/إخفاء الحركات">♟</button>
+        <button id="resetMatchBtn" class="setting-btn legendary-btn" title="إعادة المباراة" onclick="restartMatch()">إعادة المباراة</button>
     </div>
 
     <div class="main-container">
@@ -47,8 +48,8 @@
                 <div class="status-dot"></div>
             </div>
             <div class="profile-info">
-                <h3>أيانوكوجي كيوتاكا <span class="badge">مستوى 3000+</span></h3>
-                <span class="sub-text quote-text">"في نهاية المطاف، البشر ليسوا سوى أدوات. الفوز هو المعيار الوحيد."</span>
+                <h3>أيانوكوجي كيوتاكا <span class="badge">مستوى 3500+</span></h3>
+                <span class="sub-text quote-text">"النصر ليس سوى مسألة حتمية لمن يمتلك الحسابات الأدق."</span>
                 <div id="opponentCaptured" class="captured-pieces"></div>
             </div>
         </div>
