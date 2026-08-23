@@ -24,7 +24,6 @@ body.dark-theme {
     background-attachment: fixed;
 }
 
-/* الحاوية الرئيسية لتنظيم الرقعة والبروفايل جنباً إلى جنب */
 .main-container {
     display: flex;
     flex-direction: row;
@@ -61,7 +60,7 @@ body.dark-theme {
 #board {
     width: 400px !important; 
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible !important; /* مهم جداً: يمنع قص القطعة عند حواف الرقعة أثناء السحب */
 }
 
 .game-controls {
@@ -162,7 +161,6 @@ body.dark-theme {
     color: var(--ayanokoji-gold);
 }
 
-/* شاشة البداية والنهاية (تأخذ الشاشة كاملة وتغطي الخلفية لتكون مستقلة تماماً) */
 .start-screen, .game-over-modal {
     position: fixed;
     top: 0;
@@ -275,17 +273,21 @@ body.dark-theme {
     background-color: rgba(231, 76, 60, 0.85) !important;
     box-shadow: inset 0 0 12px #c0392b;
 }
-/* حل مشكلة اختفاء القطعة أثناء السحب بالماوس */
-.highlight1-32417, .piece-417db {
-    z-index: 1000 !important;
-}
-.chessboard-63f37 .highlight1-32417 {
-    display: block !important;
-}
+
+/* ==========================================
+   إصلاح جذري لمشكلة اختفاء القطعة أثناء السحب
+   ========================================== */
 .piece-417db, 
 .ui-draggable-dragging {
-    z-index: 9999 !important;
+    z-index: 10000 !important; /* أعلى من كل العناصر لضمان ظهورها فوق النوافذ والتلميحات */
     opacity: 1 !important;
     display: block !important;
-    pointer-events: none; /* يسمح للماوس بالتفاعل مع المربعات تحته أثناء السحب */
+    visibility: visible !important;
+    cursor: grabbing !important;
+    /* تم إزالة pointer-events: none لأنها كانت تسبب فقدان تتبع الماوس للقطعة */
+}
+
+.move-dot, .kill-cross, .castling-arrows {
+    pointer-events: none !important;
+    z-index: 1 !important; /* لضمان بقائها تحت القطعة المسحوبة */
 }
