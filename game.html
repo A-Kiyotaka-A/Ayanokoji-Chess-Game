@@ -9,7 +9,7 @@
 </head>
 <body class="dark-theme">
 
-    <button class="bottom-left-settings" onclick="openSettings()" title="الإعدادات">⚙️</button>
+    <button class="bottom-left-settings" onclick="goBackToLevels()">المستويات</button>
 
     <div class="game-container">
         
@@ -21,23 +21,22 @@
                     <span class="level-num" id="enemy-level">Lv. --</span>
                 </div>
             </div>
-            <div class="vs-badge">VS</div>
+            <div class="vs-badge">معركة استراتيجية</div>
         </div>
 
-        <div class="chessboard-area" id="chessboard">
-            <!-- رقعة الشطرنج أو النص المؤقت -->
-            جارِ تحميل رقعة الشطرنج...
-        </div>
+        <!-- رقعة الشطرنج الحقيقية مع تفعيل النقاط الخضراء للحركة -->
+        <div class="chessboard-area" id="chessboard"></div>
 
         <div class="control-bar">
-            <button class="game-btn" onclick="undoMove()">تراجع ⟲</button>
-            <button class="game-btn" onclick="restartGame()">إعادة المعركة 🔄</button>
-            <button class="game-btn" onclick="goBackToLevels()">العودة للمستويات 🏠</button>
+            <button class="game-btn" onclick="restartGame()">إعادة المستوى</button>
+            <button class="game-btn" onclick="toggleShowMoves()">إظهار الحركات</button>
         </div>
 
     </div>
 
     <script>
+        let showMovesActive = true;
+
         window.addEventListener('DOMContentLoaded', (event) => {
             var randomBg = Math.floor(Math.random() * 3) + 1;
             document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
@@ -45,6 +44,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const lvl = urlParams.get('level') || 1;
             updateEnemyInfo(lvl);
+            buildChessBoard();
         });
 
         function updateEnemyInfo(lvl) {
@@ -70,10 +70,44 @@
             }
         }
 
-        function undoMove() { alert("تم التراجع."); }
-        function restartGame() { alert("إعادة المعركة."); }
-        function goBackToLevels() { window.location.href = 'index.html'; }
-        function openSettings() { alert("الإعدادات."); }
+        function buildChessBoard() {
+            const board = document.getElementById('chessboard');
+            board.innerHTML = '';
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `chess-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                    
+                    square.onclick = function() {
+                        if(!showMovesActive) return;
+                        document.querySelectorAll('.move-dot').forEach(d => d.remove());
+                        const dot = document.createElement('div');
+                        dot.className = 'move-dot';
+                        square.appendChild(dot);
+                    };
+
+                    board.appendChild(square);
+                }
+            }
+        }
+
+        function restartGame() { 
+            buildChessBoard(); 
+        }
+
+        function toggleShowMoves() {
+            showMovesActive = !showMovesActive;
+            if(!showMovesActive) {
+                document.querySelectorAll('.move-dot').forEach(d => d.remove());
+                alert("تم إيقاف عرض النقاط الخضراء للحركة.");
+            } else {
+                alert("تم تفعيل عرض النقاط الخضراء للحركة.");
+            }
+        }
+
+        function goBackToLevels() { 
+            window.location.href = 'index.html'; 
+        }
     </script>
 </body>
 </html>
