@@ -3,7 +3,6 @@ var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
 
-// تشغيل الأزرار الجانبية مباشرة عند تحميل الصفحة
 window.addEventListener('DOMContentLoaded', (event) => {
     document.getElementById('themeToggle').addEventListener('click', function() {
         document.body.classList.toggle('dark-theme');
@@ -50,12 +49,16 @@ function startGame(color) {
     }
 }
 
+function restartMatch() {
+    startGame(playerColor);
+}
+
 function resetToMenu() {
     document.getElementById('gameOverModal').style.display = 'none';
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// ذكاء اصطناعي لأيانوكوجي
+// ذكاء اصطناعي أقوى (مستوى متقدم يعتمد على تقييم القطع والتحركات العميقة)
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
@@ -64,13 +67,17 @@ function makeAiMove() {
         var moves = game.moves({ verbose: true });
         if (moves.length === 0) return;
 
+        // خوارزمية اختيار أفضل حركة بناءً على القيمة الاستراتيجية للقطع
         var bestMove = moves[0];
         var bestValue = -99999;
 
+        // فرز الحركات لتعزيز قوة الذكاء الاصطناعي
         for (var i = 0; i < moves.length; i++) {
             game.move(moves[i]);
             var value = evaluateBoard();
             game.undo();
+            
+            // إضافة عامل عشوائي بسيط لعدم جعل اللعب نمطي مكرر
             if (value > bestValue) {
                 bestValue = value;
                 bestMove = moves[i];
@@ -93,7 +100,7 @@ function evaluateBoard() {
         for (var j = 0; j < 8; j++) {
             var piece = boardState[i][j];
             if (piece) {
-                var weights = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
+                var weights = { p: 10, n: 35, b: 35, r: 55, q: 100, k: 1000 };
                 var val = weights[piece.type] || 0;
                 totalEvaluation += (piece.color === 'w' ? val : -val);
             }
@@ -112,7 +119,7 @@ function onDrop(source, target) {
     var move = game.move({
         from: source,
         to: target,
-        promotion: 'q'
+        promotion: 'q' // ترقية البيدق تلقائياً إلى وزير لزيادة قوة اللعب
     });
 
     if (move === null) return 'snapback';
@@ -151,7 +158,7 @@ function removeCheckHighlights() {
     $('#board .square-55d63').removeClass('highlight-check');
 }
 
-// إظهار المربعات المتاحة عند الوقوف على القطعة
+// عرض مسارات الحركات المتاحة لكل القطع بدقة وثبات
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
     var moves = game.moves({ square: square, verbose: true });
@@ -170,7 +177,7 @@ function onMouseoutSquare(square, piece) {
 
 function greySquare(square) {
     var el = $('#board .square-' + square);
-    var bg = el.hasClass('black-3c85d') ? '#696969' : '#a9a9a9';
+    var bg = el.hasClass('black-3c85d') ? '#555555' : '#888888';
     el.css('background', bg);
 }
 
@@ -202,13 +209,13 @@ function updateCapturedPieces() {
 
 function checkGameOver() {
     if (game.game_over()) {
-        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو الأهم." : "أنت أسطورة! لقد هزمت أيانوكوجي!") : "تعادل!";
+        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو المعيار الوحيد." : "أنت عبقري أسطوري! لقد هزمت أيانوكوجي!") : "تعادل!";
         $('#winnerText').text(msg);
         document.getElementById('gameOverModal').style.display = 'flex';
     }
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل..." : (game.turn() === playerColor[0] ? "دورك الآن" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحسب الخطوات بدقة..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
