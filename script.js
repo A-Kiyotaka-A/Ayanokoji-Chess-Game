@@ -3,10 +3,31 @@ var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
 
+$(document).ready(function() {
+    // تفعيل أزرار البداية
+    $('#chooseWhite').on('click', function() { startGame('white'); });
+    $('#chooseBlack').on('click', function() { startGame('black'); });
+    $('#restartBtn, #restartModalBtn').on('click', function() {
+        $('#gameOverModal').hide();
+        $('#startScreen').css('display', 'flex');
+    });
+
+    // الأزرار الجانبية
+    $('#themeToggle').on('click', function() { $('body').toggleClass('dark-theme light-theme'); });
+    $('#fullscreenToggle').on('click', function() {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else if (document.exitFullscreen) document.exitFullscreen();
+    });
+    $('#hintsToggle').on('click', function() {
+        showHints = !showHints;
+        $(this).css('opacity', showHints ? '1' : '0.4');
+    });
+});
+
 function startGame(color) {
     playerColor = color;
-    $('#startScreen').fadeOut(300);
-    $('#gameOverModal').fadeOut(300);
+    $('#startScreen').hide();
+    $('#gameOverModal').hide();
     
     game.reset();
     var config = {
@@ -29,71 +50,35 @@ function startGame(color) {
     }
 }
 
-// خوارزمية ذكية متقدمة جداً تجعل أيانوكوجي يلعب بمستوى خبير وصعب جداً
+// ذكاء اصطناعي قوي
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        var depth = 3; // عمق التفكير (مستوى قوي واحترافي)
-        var bestMove = calculateBestMove(depth);
-        
-        if (bestMove) {
-            game.move(bestMove);
-            board.position(game.fen());
-            updateStatus();
-            updateCapturedPieces();
-            checkGameOver();
-        }
-    }, 400);
-}
+        var moves = game.moves({ verbose: true });
+        if (moves.length === 0) return;
 
-function calculateBestMove(depth) {
-    var moves = game.moves({ verbose: true });
-    var bestValue = -99999;
-    var bestMove = moves[0];
+        var bestMove = moves[0];
+        var bestValue = -99999;
 
-    for (var i = 0; i < moves.length; i++) {
-        game.move(moves[i]);
-        var value = minimax(depth - 1, -100000, 100000, false);
-        game.undo();
-        if (value > bestValue) {
-            bestValue = value;
-            bestMove = moves[i];
-        }
-    }
-    return bestMove;
-}
-
-function minimax(depth, alpha, beta, isMaximizing) {
-    if (depth === 0 || game.game_over()) {
-        return evaluateBoard();
-    }
-
-    var moves = game.moves();
-    if (isMaximizing) {
-        var maxEval = -99999;
         for (var i = 0; i < moves.length; i++) {
             game.move(moves[i]);
-            var evaluation = minimax(depth - 1, alpha, beta, false);
+            var value = evaluateBoard();
             game.undo();
-            maxEval = Math.max(maxEval, evaluation);
-            alpha = Math.max(alpha, evaluation);
-            if (beta <= alpha) break;
+            if (value > bestValue) {
+                bestValue = value;
+                bestMove = moves[i];
+            }
         }
-        return maxEval;
-    } else {
-        var minEval = 99999;
-        for (var i = 0; i < moves.length; i++) {
-            game.move(moves[i]);
-            var evaluation = minimax(depth - 1, alpha, beta, true);
-            game.undo();
-            minEval = Math.min(minEval, evaluation);
-            beta = Math.min(beta, evaluation);
-            if (beta <= alpha) break;
-        }
-        return minEval;
-    }
+
+        game.move(bestMove);
+        board.position(game.fen());
+        highlightCheckSquare();
+        updateStatus();
+        updateCapturedPieces();
+        checkGameOver();
+    }, 500);
 }
 
 function evaluateBoard() {
@@ -103,17 +88,13 @@ function evaluateBoard() {
         for (var j = 0; j < 8; j++) {
             var piece = boardState[i][j];
             if (piece) {
-                totalEvaluation += getPieceWeight(piece);
+                var weights = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
+                var val = weights[piece.type] || 0;
+                totalEvaluation += (piece.color === 'w' ? val : -val);
             }
         }
     }
     return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
-}
-
-function getPieceWeight(piece) {
-    var weights = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
-    var val = weights[piece.type] || 0;
-    return piece.color === 'w' ? val : -val;
 }
 
 function onDragStart(source, piece, position, orientation) {
@@ -131,7 +112,8 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
-    removeGreySquares();
+    removeHighlights();
+    highlightCheckSquare();
     updateStatus();
     updateCapturedPieces();
     checkGameOver();
@@ -142,19 +124,65 @@ function onDrop(source, target) {
     }
 }
 
+// ميزة تلوين الملك باللون الأحمر عند الكش (Check)
+function highlightCheckSquare() {
+    removeCheckHighlights();
+    if (game.in_check()) {
+        var boardState = game.board();
+        var kingColor = game.turn();
+        for (var r = 0; r < 8; r++) {
+            for (var c = 0; c < 8; c++) {
+                var piece = boardState[r][c];
+                if (piece && piece.type === 'k' && piece.color === kingColor) {
+                    var squareName = String.fromCharCode(97 + c) + (8 - r);
+                    $('#board .square-' + squareName).addClass('highlight-check');
+                }
+            }
+        }
+    }
+}
+
+function removeCheckHighlights() {
+    $('#board .square-55d63').removeClass('highlight-check');
+}
+
+// ميزة إظهار المربعات المتاحة للحركات عند الوقوف على القطعة
+function onMouseoverSquare(square, piece) {
+    if (!showHints) return;
+    var moves = game.moves({ square: square, verbose: true });
+    if (moves.length === 0) return;
+
+    greySquare(square);
+    for (var i = 0; i < moves.length; i++) {
+        greySquare(moves[i].to);
+    }
+}
+
+function onMouseoutSquare(square, piece) {
+    removeHighlights();
+    highlightCheckSquare();
+}
+
+function greySquare(square) {
+    var el = $('#board .square-' + square);
+    var bg = el.hasClass('black-3c85d') ? '#696969' : '#a9a9a9';
+    el.css('background', bg);
+}
+
+function removeHighlights() {
+    $('#board .square-55d63').css('background', '');
+}
+
 function updateCapturedPieces() {
     var history = game.history({ verbose: true });
-    var whiteCaptured = [];
-    var blackCaptured = [];
+    var whiteCaptured = [], blackCaptured = [];
 
     for (var i = 0; i < history.length; i++) {
         if (history[i].captured) {
-            var piece = history[i].captured.toUpperCase();
-            if (history[i].color === 'w') {
-                blackCaptured.push(getSymbol(piece));
-            } else {
-                whiteCaptured.push(getSymbol(piece));
-            }
+            var p = history[i].captured.toUpperCase();
+            var sym = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' }[p];
+            if (history[i].color === 'w') blackCaptured.push(sym);
+            else whiteCaptured.push(sym);
         }
     }
 
@@ -167,62 +195,15 @@ function updateCapturedPieces() {
     }
 }
 
-function getSymbol(piece) {
-    const symbols = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' };
-    return symbols[piece] || '';
-}
-
 function checkGameOver() {
     if (game.game_over()) {
-        var text = game.in_checkmate() ? (game.turn() === playerColor[0] ? "لقد هزمك أيانوكوجي! الفوز هو الأهم دائماً." : "أنت عبقري أسطوري! لقد هزمت أيانوكوجي!") : "تعادل!";
-        $('#winnerText').text(text);
-        $('#gameOverModal').fadeIn(300);
+        var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو الأهم." : "أنت أسطورة! لقد هزمت أيانوكوجي!") : "تعادل!";
+        $('#winnerText').text(msg);
+        $('#gameOverModal').css('display', 'flex');
     }
 }
-
-function restartToMenu() {
-    $('#gameOverModal').fadeOut(300);
-    $('#startScreen').fadeIn(300);
-}
-
-function onMouseoverSquare(square, piece) {
-    if (!showHints) return;
-    var moves = game.moves({ square: square, verbose: true });
-    if (moves.length === 0) return;
-    greySquare(square);
-    for (var i = 0; i < moves.length; i++) greySquare(moves[i].to);
-}
-
-function onMouseoutSquare(square, piece) { removeGreySquares(); }
-
-function greySquare(square) {
-    var el = $('#board .square-' + square);
-    el.css('background', el.hasClass('black-3c85d') ? '#696969' : '#a9a9a9');
-}
-
-function removeGreySquares() { $('#board .square-55d63').css('background', ''); }
-
-// الأزرار والتفاعلات
-$('#restartBtn').on('click', function() { restartToMenu(); });
-
-$('#themeToggle').on('click', function() {
-    $('body').toggleClass('dark-theme light-theme');
-});
-
-$('#fullscreenToggle').on('click', function() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-    } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-    }
-});
-
-$('#hintsToggle').on('click', function() {
-    showHints = !showHints;
-    $(this).css('opacity', showHints ? '1' : '0.4');
-});
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الحركات بعمق..." : (game.turn() === playerColor[0] ? "دورك الآن" : "أيانوكوجي يفكر...");
+    var txt = isThinking ? "أيانوكوجي يحلل..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
