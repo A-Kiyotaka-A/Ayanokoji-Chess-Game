@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شطرنج Ayanokoji - النظام الاستراتيجي</title>
+    <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
     
     <link rel="stylesheet" href="style.css">
-    <!-- مكتبة الرقعة CSS -->
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 </head>
 <body class="dark-theme">
@@ -17,8 +16,8 @@
             <h2>شطرنج كيوتاكا أيانوكوجي</h2>
             <p>اختر لون القطع لمواجهة العبقري المطلق:</p>
             <div class="color-selection">
-                <button class="color-btn" onclick="startGame('white')">⚪ الأبيض (أنت تبدأ أولاً)</button>
-                <button class="color-btn" onclick="startGame('black')">⚫ الأسود (أيانوكوجي يبدأ أولاً)</button>
+                <button class="color-btn" onclick="startGame('white')">⚪ الأبيض</button>
+                <button class="color-btn" onclick="startGame('black')">⚫ الأسود</button>
             </div>
         </div>
     </div>
@@ -28,60 +27,64 @@
         <div class="modal-box">
             <h2 id="winnerTitle">انتهت اللعبة</h2>
             <p id="winnerText"></p>
-            <button class="action-btn" onclick="restartMatch()">إعادة المباراة</button>
-            <button class="action-btn secondary-btn" onclick="resetToMenu()">القائمة الرئيسية</button>
+            <button class="action-btn legendary-btn" onclick="restartMatch()" style="width: 100%; margin-bottom: 10px;">إعادة المباراة</button>
+            <button class="action-btn" onclick="resetToMenu()" style="width: 100%;">القائمة الرئيسية</button>
         </div>
     </div>
 
-    <!-- لوحة الأزرار -->
-    <div class="settings-panel">
-        <button id="themeToggle" class="setting-btn" title="تغيير المظهر">🌓</button>
-        <button id="fullscreenToggle" class="setting-btn" title="تكبير الشاشة">⛶</button>
-        <button id="hintsToggle" class="setting-btn" title="إظهار/إخفاء الحركات">♟</button>
-        <button id="resetMatchBtn" class="setting-btn legendary-btn" title="إعادة المباراة" onclick="restartMatch()">إعادة المباراة</button>
+    <!-- 1. شريط الشعار العلوي -->
+    <div class="top-banner">
+        <span>Ayanokoji Chess Arena</span>
     </div>
 
+    <!-- الحاوية الرئيسية (يسار: اللاعب | وسط: الرقعة | يمين: أيانوكوجي والأزرار) -->
     <div class="main-container">
-        <!-- بروفايل أيانوكوجي -->
-        <div class="profile-card opponent-card">
-            <div class="avatar-container">
-                <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
-                <div class="status-dot"></div>
-            </div>
-            <div class="profile-info">
-                <h3>أيانوكوجي كيوتاكا <span class="badge">المستوى الاستراتيجي</span></h3>
-                <span class="sub-text quote-text">"البشر مجرد أدوات، ولن أسمح لأي خطأ بأن يعطل حساباتي."</span>
-                <div id="opponentCaptured" class="captured-pieces"></div>
-            </div>
-        </div>
 
-        <!-- رقعة الشطرنج -->
-        <div class="board-wrapper">
-            <div id="board" style="width: 380px;"></div>
-            <div class="game-controls">
-                <button class="action-btn" onclick="resetToMenu()">القائمة</button>
-                <span id="status">الحالة: جاهز</span>
-            </div>
-        </div>
-
-        <!-- بروفايل اللاعب -->
-        <div class="profile-card player-card">
+        <!-- 2. بروفايل اللاعب (على اليسار) -->
+        <div class="player-side-panel">
             <div class="avatar-container">
                 <img src="images/player.png" alt="YOU" class="avatar">
-                <div class="status-dot online"></div>
             </div>
-            <div class="profile-info">
-                <h3>YOU (أنت)</h3>
-                <div id="playerCaptured" class="captured-pieces"></div>
+            <h3>اللاعب (أنت)</h3>
+            <div id="playerCaptured" class="captured-pieces"></div>
+        </div>
+
+        <!-- 3. رقعة الشطرنج (في المنتصف) -->
+        <div class="board-wrapper">
+            <div id="board" style="width: 400px;"></div>
+            <div class="game-controls">
+                <span id="status">الحالة: جاهز</span>
+                <button class="action-btn" onclick="resetToMenu()" style="padding: 5px 12px; font-size: 0.8rem;">القائمة</button>
             </div>
         </div>
+
+        <!-- 4. الجانب الأيمن (عبوة أيانوكوجي فوق + علبة الأزرار تحتها) -->
+        <div class="right-side-panel">
+            <!-- بروفايل أيانوكوجي العمودي -->
+            <div class="opponent-card">
+                <div class="avatar-container">
+                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
+                </div>
+                <h3>أيانوكوجي كيوتاكا</h3>
+                <span class="quote-text">"البشر مجرد أدوات، والحسابات لا تخطئ."</span>
+                <div id="opponentCaptured" class="captured-pieces"></div>
+            </div>
+
+            <!-- علبة الأزرار والتتبيثات -->
+            <div class="settings-box">
+                <button id="themeToggle" class="setting-btn">🌓 تبديل المظهر</button>
+                <button id="fullscreenToggle" class="setting-btn">⛶ ملء الشاشة</button>
+                <button id="hintsToggle" class="setting-btn">♟ إظهار الحركات</button>
+                <button class="action-btn legendary-btn" onclick="restartMatch()">إعادة المباراة</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- روابط المكتبات الأساسية -->
+    <!-- المكتبات الأساسية -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <!-- تم إضافة v=2 لإجبار المتصفح على تحديث الملف فوراً -->
-    <script src="script.js?v=2"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>
