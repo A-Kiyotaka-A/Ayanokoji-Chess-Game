@@ -58,6 +58,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+    // ميزة تثبيت المسارات بالنقر وتطبيق النقل الفوري
     $(document).on('click', '#board .square-55d63', function() {
         if (!showHints || game.game_over()) return;
         
@@ -92,8 +93,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    // بدون false = أنيميشن انزلاق طبيعي عند النقر
-                    board.position(game.fen());
+                    // التحديث الفوري بدون أنيميشن يمنع بقاء القطعتين فوق بعضهما
+                    board.position(game.fen(), false);
+                    
                     if (targetPiece) playSound('capture');
                     else playSound('move');
 
@@ -146,11 +148,12 @@ function startGame(color) {
         position: 'start',
         orientation: playerColor,
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-        snapbackSpeed: 50,
-        snapSpeed: 50,
-        moveSpeed: 300, // سرعة أنيميشن حركة القطع (300 مللي ثانية = سلس ومريح)
+        snapbackSpeed: 0,
+        snapSpeed: 0,
+        moveSpeed: 0,
         onDragStart: onDragStart,
         onDrop: onDrop,
+        onSnapEnd: onSnapEnd,
         onMouseoverSquare: onMouseoverSquare,
         onMouseoutSquare: onMouseoutSquare
     };
@@ -185,8 +188,9 @@ function makeAiMove() {
 
             window.setTimeout(function() {
                 game.move(bestMove);
-                // بدون false = أنيميشن انزلاق طبيعي للروبوت
-                board.position(game.fen());
+                
+                // تحديث مباشر وفوري للرقعة بدون تأخير أنيميشن
+                board.position(game.fen(), false);
                 
                 if (isCapture) playSound('capture');
                 else playSound('move');
@@ -369,10 +373,6 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
-    // مهم جداً: نستخدم false هنا لأن القطعة موجودة بالفعل في مكانها بصرياً بسبب السحب
-    // استخدام false هنا يمنع مشكلة "القطعتين فوق بعضهما" عند الأكل
-    board.position(game.fen(), false);
-
     if (targetPiece) playSound('capture');
     else playSound('move');
 
@@ -386,6 +386,11 @@ function onDrop(source, target) {
     if (game.turn() === aiTurnCheck && !game.game_over()) {
         makeAiMove();
     }
+}
+
+// دالة تفريغ المربع فور الانتهاء من الإفلات لمنع ظهور أي بقايا للقطعة السابقة
+function onSnapEnd() {
+    board.position(game.fen(), false);
 }
 
 function highlightCheckSquare() {
