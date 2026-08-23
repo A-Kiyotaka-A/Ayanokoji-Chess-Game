@@ -81,13 +81,8 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 10);
+        window.setTimeout(makeAiMove, 50);
     }
-}
-
-function restartMatch() {
-    document.getElementById('gameOverModal').style.display = 'none';
-    startGame(playerColor);
 }
 
 function resetToMenu() {
@@ -97,13 +92,13 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// تسريع أقصى خوارزمية ذكية وفورية (العمق 2 لتنفيذ الحركة بدون أي انتظار يذكر)
+// ضبط العمق إلى 3 مع الحفاظ على الأداء السلس والسريع بفضل الخوارزمية المحسنة
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        var bestMove = calculateBestMove(2); 
+        var bestMove = calculateBestMove(3); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             game.move(bestMove);
@@ -117,7 +112,7 @@ function makeAiMove() {
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 10); 
+    }, 20); 
 }
 
 function calculateBestMove(depth) {
@@ -193,11 +188,11 @@ function getAdvancedPieceValue(piece, r, c) {
     var val = weights[piece.type];
 
     if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
-        val += 25;
+        val += 35; // سيطرة دقيقة واحترافية على المركز
     }
 
     if (piece.type === 'p') {
-        val += (piece.color === 'w' ? (7 - r) : r) * 8;
+        val += (piece.color === 'w' ? (7 - r) : r) * 10;
     }
 
     return piece.color === 'w' ? val : -val;
@@ -295,12 +290,17 @@ function updateCapturedPieces() {
     var history = game.history({ verbose: true });
     var whiteCaptured = [], blackCaptured = [];
 
+    var symbolsWhite = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' };
+    var symbolsBlack = { 'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔' };
+
     for (var i = 0; i < history.length; i++) {
         if (history[i].captured) {
             var p = history[i].captured.toUpperCase();
-            var sym = { 'P': 'P', 'N': 'N', 'B': 'B', 'R': 'R', 'Q': 'Q', 'K': 'K' }[p];
-            if (history[i].color === 'w') blackCaptured.push(sym);
-            else whiteCaptured.push(sym);
+            if (history[i].color === 'w') {
+                blackCaptured.push(symbolsBlack[p]);
+            } else {
+                whiteCaptured.push(symbolsWhite[p]);
+            }
         }
     }
 
@@ -322,7 +322,7 @@ function checkGameOver() {
                 msg = "أحسنت، تغلبت على أيانوكوجي كيوتاكا.";
             }
         } else {
-            msg = "لقد نجوت هذه المرة بأعجوبة.";
+            msg = "لقد نجوت هذه المرة بأعجوبة (تعادل).";
         }
         $('#winnerText').text(msg);
         document.getElementById('gameOverModal').style.display = 'flex';
@@ -330,6 +330,6 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل عمق التحركات..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل الموقف..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
