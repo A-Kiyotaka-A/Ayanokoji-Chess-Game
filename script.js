@@ -69,6 +69,8 @@ function startGame(color) {
         draggable: true,
         position: 'start',
         orientation: playerColor,
+        snapSpeed: 250,      // أنيميشن حركة سريعة وسلسة للقطع
+        appearSpeed: 400,    // أنيميشن ظهور القطع
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -97,11 +99,12 @@ function makeAiMove() {
     updateStatus(true);
 
     window.setTimeout(function() {
-        var bestMove = calculateBestMove(3); 
+        // رفعنا العمق إلى 4 ليكون أيانوكوجي في أقصى درجات ذكائه الاستراتيجي
+        var bestMove = calculateBestMove(4); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             game.move(bestMove);
-            board.position(game.fen());
+            board.position(game.fen(), true); // تفعيل الأنيميشن عند تحريك الـ AI
             
             if (isCapture) playSound('capture');
             else playSound('move');
@@ -187,11 +190,11 @@ function getAdvancedPieceValue(piece, r, c) {
     var val = weights[piece.type];
 
     if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
-        val += 35;
+        val += 40; // سيطرة صارمة على المركز
     }
 
     if (piece.type === 'p') {
-        val += (piece.color === 'w' ? (7 - r) : r) * 10;
+        val += (piece.color === 'w' ? (7 - r) : r) * 12;
     }
 
     return piece.color === 'w' ? val : -val;
@@ -329,6 +332,6 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الموقف..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل الموقف بعمق..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
