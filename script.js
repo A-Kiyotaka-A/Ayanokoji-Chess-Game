@@ -59,13 +59,12 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// ذكاء اصطناعي داخلي قوي ومتوافق تماماً مع المتصفح
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        var bestMove = calculateBestMove(3); // عمق 3 لضمان سرعة واستقرار الحركة
+        var bestMove = calculateBestMove(3);
         if (bestMove) {
             game.move(bestMove);
             board.position(game.fen());
@@ -201,11 +200,32 @@ function removeCheckHighlights() {
 
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
+    var moves = game.moves({ square: square, verbose: true });
+    if (moves.length === 0) return;
+
+    colorSquare(square, 'rgba(100, 100, 100, 0.5)');
+
+    for (var i = 0; i < moves.length; i++) {
+        var targetSquare = moves[i].to;
+        var color = 'rgba(100, 100, 100, 0.5)';
+
+        if (moves[i].captured) {
+            color = 'rgba(142, 68, 173, 0.85)'; // بنفسجي للأكل
+        } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
+            color = 'rgba(46, 204, 113, 0.85)'; // أخضر للتبييت
+        }
+
+        colorSquare(targetSquare, color);
+    }
 }
 
 function onMouseoutSquare(square, piece) {
     removeHighlights();
-    highlightCheckSquare();
+    highlightCheckScale();
+}
+
+function colorSquare(square, color) {
+    $('#board .square-' + square).css('background-color', color);
 }
 
 function removeHighlights() {
