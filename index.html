@@ -13,7 +13,7 @@
     <!-- شاشة البداية -->
     <div id="startScreen" class="start-screen">
         <div class="start-box">
-            <h2 style="color: var(--ayanokoji-gold); text-shadow: 0 0 10px var(--ayanokoji-brown);">شطرنج كيوتاكا أيانوكوجي</h2>
+            <h2 style="color: var(--ayanokoji-gold); text-shadow: 0 0 15px var(--ayanokoji-gold);">شطرنج كيوتاكا أيانوكوجي</h2>
             <p style="color: #d1c7bd; margin-bottom: 25px;">استعد للمواجهة الاستراتيجية الكبرى</p>
             <button class="play-trigger-btn" onclick="showColorSelection()">
                 <div class="play-triangle"></div>
@@ -31,12 +31,11 @@
         <div class="modal-box">
             <h2 id="winnerTitle" style="color: var(--ayanokoji-gold);">انتهت اللعبة</h2>
             <p id="winnerText" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.6;"></p>
-            <button class="action-btn legendary-btn" onclick="restartMatch()" style="width: 100%; margin-bottom: 12px; padding: 12px;">إعادة المباراة</button>
-            <button class="action-btn" onclick="resetToMenu()" style="width: 100%; padding: 12px;">القائمة الرئيسية</button>
+            <button class="action-btn legendary-btn" onclick="resetToMenu()" style="width: 100%; margin-bottom: 12px; padding: 12px;">القائمة الرئيسية واختيار اللون</button>
         </div>
     </div>
 
-    <!-- الحاوية الرئيسية: البروفايل يساراً والرقعة وشريط الأدوات يميناً -->
+    <!-- الحاوية الرئيسية -->
     <div class="main-container">
 
         <!-- القسم الأيسر: بروفايل أيانوكوجي -->
@@ -48,13 +47,13 @@
                 <h3>أيانوكوجي كيوتاكا</h3>
                 <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
                 <div style="margin-top: 20px; width: 100%;">
-                    <span style="font-size: 0.85rem; color: #a39585;">القطع المأخوذة</span>
+                    <span style="font-size: 0.85rem; color: #e2b13c; font-weight: bold;">القطع المأخوذة</span>
                     <div id="opponentCaptured" class="captured-pieces"></div>
                 </div>
             </div>
         </div>
 
-        <!-- القسم الأيمن: رقعة الشطرنج وتحتها شريط الأدوات مباشرة -->
+        <!-- القسم الأيمن: رقعة الشطرنج وشريط الأدوات -->
         <div class="right-game-area">
             <div class="board-wrapper">
                 <div id="board"></div>
@@ -67,7 +66,7 @@
             <div class="tools-bar">
                 <button id="fullscreenToggle" class="setting-btn">[ ] ملء الشاشة</button>
                 <button id="hintsToggle" class="setting-btn">[#] الحركات</button>
-                <button class="action-btn legendary-btn" onclick="restartMatch()">[↺] إعادة البدء</button>
+                <button class="action-btn legendary-btn" onclick="resetToMenu()">[↺] القائمة الرئيسية</button>
             </div>
         </div>
 
