@@ -69,6 +69,8 @@ function startGame(color) {
         draggable: true,
         position: 'start',
         orientation: playerColor,
+        // هذا السطر يوجه الرقعة لسحب الصور من مسار موثوق وثابت لمنع الاختفاء والوميض
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -95,17 +97,13 @@ function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
-    // سرعة فائقة جداً في اتخاذ القرار (رد فوري)
     window.setTimeout(function() {
         var bestMove = calculateBestMove(2); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             
-            // تحريك القطعة في محرك الشطرنج أولاً
             game.move(bestMove);
-            
-            // تحديث الرقعة فوراً بدون أي تأخير أو انيميشن وهمي يسبب الاختفاء
-            board.position(game.fen(), false); 
+            board.position(game.fen()); 
             
             if (isCapture) playSound('capture');
             else playSound('move');
