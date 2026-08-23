@@ -4,7 +4,6 @@ var playerColor = 'white';
 var showHints = true;
 
 window.addEventListener('DOMContentLoaded', (event) => {
-    // اختيار خلفية عشوائية من 1 إلى 3 بصيغة jfif كما طلبت
     var randomBg = Math.floor(Math.random() * 3) + 1;
     document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
 
@@ -207,7 +206,7 @@ function highlightCheckSquare() {
                 var piece = boardState[r][c];
                 if (piece && piece.type === 'k' && piece.color === kingColor) {
                     var squareName = String.fromCharCode(97 + c) + (8 - r);
-                    $('#board .square-' + squareName).css('background-color', 'rgba(231, 76, 60, 0.8)');
+                    $('#board .square-' + squareName).addClass('check-square');
                 }
             }
         }
@@ -215,9 +214,10 @@ function highlightCheckSquare() {
 }
 
 function removeCheckHighlights() {
-    $('#board .square-55d63').css('background-color', '');
+    $('#board .square-55d63').removeClass('check-square');
 }
 
+// تخصيص المظهر والدلالات عند تمرير الماوس على القطعة
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
     var moves = game.moves({ square: square, verbose: true });
@@ -225,7 +225,24 @@ function onMouseoverSquare(square, piece) {
 
     for (var i = 0; i < moves.length; i++) {
         var targetSquare = moves[i].to;
-        colorSquare(targetSquare, 'rgba(46, 204, 113, 0.5)');
+        var $sq = $('#board .square-' + targetSquare);
+
+        if (moves[i].captured) {
+            // إكس حمراء للقتل
+            if ($sq.length > 0 && $sq.find('.kill-cross').length === 0) {
+                $sq.append('<div class="kill-cross">✕</div>');
+            }
+        } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece && piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
+            // سهمين أزرقين لتبادل الأماكن / التبييت
+            if ($sq.length > 0 && $sq.find('.castling-arrows').length === 0) {
+                $sq.append('<div class="castling-arrows"><span style="display:block;">➔</span><span style="display:block; margin-top:-8px;">⬅</span></div>');
+            }
+        } else {
+            // دائرة خضراء للحركات العادية
+            if ($sq.length > 0 && $sq.find('.move-dot').length === 0) {
+                $sq.append('<div class="move-dot"></div>');
+            }
+        }
     }
 }
 
@@ -234,12 +251,10 @@ function onMouseoutSquare(square, piece) {
     highlightCheckSquare();
 }
 
-function colorSquare(square, color) {
-    $('#board .square-' + square).css('background-color', color);
-}
-
 function removeHighlights() {
-    $('#board .square-55d63').css('background-color', '');
+    $('.move-dot').remove();
+    $('.kill-cross').remove();
+    $('.castling-arrows').remove();
 }
 
 function updateCapturedPieces() {
@@ -265,9 +280,7 @@ function updateCapturedPieces() {
 function checkGameOver() {
     if (game.game_over()) {
         var msg = "";
-        // إذا انتهت بكش مات
         if (game.in_checkmate()) {
-            // إذا كان دور الخاسر هو دور اللاعب الحالي، فهذا يعني أن اللاعب خسر
             if (game.turn() === playerColor[0]) {
                 msg = "لا تيأس إذا رجعت خطوة للوراء، فلا تنسَ أن السهم يحتاج أن ترجعه للوراء لينطلق بقوة إلى الأمام.";
             } else {
