@@ -69,13 +69,11 @@ function startGame(color) {
         draggable: true,
         position: 'start',
         orientation: playerColor,
-        snapSpeed: 250,      // أنيميشن حركة سريعة وسلسة للقطع
-        appearSpeed: 400,    // أنيميشن ظهور القطع
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
         onMouseoutSquare: onMouseoutSquare,
-        onSnapEnd: function() { board.position(game.fen()); }
+        // تم إزالة snapSpeed المسبب للاختفاء لجعل الاستجابة فورية ونظيفة
     };
     
     board = Chessboard('board', config);
@@ -99,12 +97,12 @@ function makeAiMove() {
     updateStatus(true);
 
     window.setTimeout(function() {
-        // رفعنا العمق إلى 4 ليكون أيانوكوجي في أقصى درجات ذكائه الاستراتيجي
-        var bestMove = calculateBestMove(4); 
+        // تم ضبط العمق على 3 مع خوارزمية سريعة جداً وذكية لضمان عدم حدوث أي بطء
+        var bestMove = calculateBestMove(3); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             game.move(bestMove);
-            board.position(game.fen(), true); // تفعيل الأنيميشن عند تحريك الـ AI
+            board.position(game.fen()); // تحديث فوري بدون تقطيع أو اختفاء
             
             if (isCapture) playSound('capture');
             else playSound('move');
@@ -114,7 +112,7 @@ function makeAiMove() {
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 20); 
+    }, 10); 
 }
 
 function calculateBestMove(depth) {
@@ -190,11 +188,11 @@ function getAdvancedPieceValue(piece, r, c) {
     var val = weights[piece.type];
 
     if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
-        val += 40; // سيطرة صارمة على المركز
+        val += 35;
     }
 
     if (piece.type === 'p') {
-        val += (piece.color === 'w' ? (7 - r) : r) * 12;
+        val += (piece.color === 'w' ? (7 - r) : r) * 10;
     }
 
     return piece.color === 'w' ? val : -val;
@@ -279,6 +277,10 @@ function onMouseoverSquare(square, piece) {
 
 function onMouseoutSquare(square, piece) {
     removeHighlights();
+    highlightCheckShield(); // تم التصحيح تفادياً لأي خطأ
+}
+
+function highlightCheckShield() {
     highlightCheckSquare();
 }
 
@@ -332,6 +334,6 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الموقف بعمق..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل الموقف..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
