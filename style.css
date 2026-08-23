@@ -25,19 +25,16 @@ body.dark-theme {
     direction: rtl;
 }
 
-/* زر الإعدادات السفلي الأيسر (بدون إيموجي) */
+/* زر الإعدادات السفلي الأيسر (أيقونة ترس هندسية بدون نص أو إيموجي) */
 .bottom-left-settings {
     position: fixed;
     bottom: 20px;
     left: 20px;
     background: var(--panel-bg);
     border: 2px solid var(--neon-orange);
-    color: var(--neon-yellow);
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    font-size: 1rem;
-    font-weight: bold;
     cursor: pointer;
     box-shadow: 0 0 15px rgba(243, 156, 18, 0.4);
     transition: 0.3s;
@@ -46,72 +43,47 @@ body.dark-theme {
     justify-content: center;
     align-items: center;
 }
+.bottom-left-settings::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 3px solid var(--neon-yellow);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.2);
+}
 
 .bottom-left-settings:hover {
     background: var(--neon-orange);
-    color: #000;
     transform: scale(1.1);
     box-shadow: 0 0 25px var(--neon-orange);
 }
+.bottom-left-settings:hover::before {
+    border-color: #000;
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.2);
+}
 
-.settings-modal {
+.settings-modal, .game-over-modal {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(5px);
     z-index: 2000;
     justify-content: center;
     align-items: center;
 }
 
-.settings-content {
+.settings-content, .modal-content {
     background: var(--panel-bg);
     border: 2px solid var(--neon-yellow);
     padding: 25px;
     border-radius: 15px;
     width: 350px;
     box-shadow: 0 0 30px rgba(241, 196, 15, 0.3);
-    text-align: right;
-}
-
-.settings-content h2 {
-    margin-top: 0;
-    color: var(--neon-yellow);
-    font-size: 1.2rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 10px;
-}
-
-.setting-item {
-    margin: 15px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.setting-btn, select {
-    background: #21262d;
-    color: var(--neon-yellow);
-    border: 1px solid var(--neon-orange);
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.close-settings {
-    background: var(--neon-red);
-    color: #fff;
-    border: none;
-    width: 100%;
-    padding: 8px;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 15px;
+    text-align: center;
 }
 
 .levels-container {
@@ -143,7 +115,6 @@ body.dark-theme {
     color: #8b949e;
     font-size: 1rem;
     margin-bottom: 25px;
-    text-shadow: 0 0 5px rgba(255,255,255,0.1);
 }
 
 .levels-grid {
@@ -163,7 +134,6 @@ body.dark-theme {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
-    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -182,7 +152,6 @@ body.dark-theme {
     overflow: hidden;
     border: 2px solid var(--neon-yellow);
     margin-bottom: 8px;
-    box-shadow: 0 0 12px rgba(241, 196, 15, 0.4);
     background: #111;
 }
 
@@ -227,13 +196,11 @@ body.dark-theme {
     width: 85px;
     height: 85px;
     border: 3px solid var(--neon-orange);
-    box-shadow: 0 0 15px var(--neon-orange);
 }
 
 .boss-num {
     color: var(--neon-red);
     border-color: var(--neon-red);
-    font-size: 0.85rem;
 }
 
 .boss-quote {
@@ -249,7 +216,7 @@ body.dark-theme {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 900px;
+    max-width: 500px;
 }
 
 .matchup-header {
@@ -257,10 +224,10 @@ body.dark-theme {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     background: var(--panel-bg);
-    padding: 15px 25px;
-    border-radius: 15px;
+    padding: 12px 20px;
+    border-radius: 12px;
     border: 1px solid var(--neon-orange);
     box-sizing: border-box;
 }
@@ -268,92 +235,89 @@ body.dark-theme {
 .enemy-profile {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
-.vs-badge {
-    font-size: 1.2rem;
+.status-box {
+    width: 100%;
+    background: var(--panel-bg);
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    border: 1px solid var(--neon-yellow);
+    margin-bottom: 15px;
     font-weight: bold;
     color: var(--neon-yellow);
 }
 
-/* رقعة الشطرنج الحقيقية 8x8 */
-.chessboard-area {
-    width: 450px;
-    height: 450px;
-    background: #161b22;
+#board {
+    width: 420px;
+    height: 420px;
+    margin-bottom: 15px;
     border: 3px solid var(--neon-orange);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: 0 0 30px rgba(243, 156, 18, 0.3);
-    margin-bottom: 20px;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    position: relative;
-    overflow: hidden;
 }
 
-.chess-square {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    cursor: pointer;
-}
-.chess-square.light { background: #21262d; }
-.chess-square.dark { background: #11161d; }
-
-/* النقاط الخضراء الصغيرة للحركة (بدل المربعات الكاملة) */
+/* النقاط الخضراء الصغيرة للحركة */
 .move-dot {
     width: 14px;
     height: 14px;
     background-color: var(--neon-green);
     border-radius: 50%;
-    box-shadow: 0 0 10px var(--neon-green);
-    position: absolute;
-    z-index: 10;
-    pointer-events: none;
-}
-
-/* شريط الأزرار (يحتوي فقط على إعادة المستوى وعرض الحركات) */
-.control-bar {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    width: 100%;
-    background: var(--panel-bg);
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid var(--neon-yellow);
-    box-sizing: border-box;
-}
-
-.game-btn {
-    background: #21262d;
-    color: var(--neon-yellow);
-    border: 1px solid var(--neon-orange);
-    padding: 10px 22px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.game-btn:hover {
-    background: var(--neon-orange);
-    color: #000;
-    box-shadow: 0 0 20px var(--neon-orange);
-}
-.move-dot {
-    width: 14px;
-    height: 14px;
-    background-color: var(--neon-green, #2ecc71);
-    border-radius: 50%;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 10px var(--neon-green, #2ecc71);
+    box-shadow: 0 0 10px var(--neon-green);
     z-index: 10;
     pointer-events: none;
 }
+
+.control-bar {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+}
+
+/* الأزرار برموز هندسية نقية بدون نص أو إيموجي */
+.icon-btn {
+    background: #21262d;
+    border: 1px solid var(--neon-orange);
+    width: 50px;
+    height: 45px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+
+/* زر إعادة المستوى (أيقونة سهم دائري هندسي) */
+.restart-icon::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 3px solid var(--neon-yellow);
+    border-top-color: transparent;
+    border-radius: 50%;
+}
+
+/* زر تفعيل/إيقاف الحركات (أيقونة نقطة مضيئة هندسية) */
+.hint-icon::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: var(--neon-green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--neon-green);
+}
+
+.icon-btn:hover {
+    background: var(--neon-orange);
+    box-shadow: 0 0 20px var(--neon-orange);
+}
+.icon-btn:hover.restart-icon::before { border-color: #000; border-top-color: transparent; }
+.icon-btn:hover.hint-icon::before { background: #000; box-shadow: none; }
