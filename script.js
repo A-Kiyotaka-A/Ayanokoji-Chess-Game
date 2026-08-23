@@ -50,6 +50,7 @@ function startGame(color) {
 }
 
 function restartMatch() {
+    document.getElementById('gameOverModal').style.display = 'none';
     startGame(playerColor);
 }
 
@@ -58,39 +59,72 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// ذكاء اصطناعي أقوى (مستوى متقدم يعتمد على تقييم القطع والتحركات العميقة)
+// ذكاء اصطناعي عميق جداً ومستوى أسطوري (Minimax Algorithm بعمق 3 خطوات)
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
     window.setTimeout(function() {
-        var moves = game.moves({ verbose: true });
-        if (moves.length === 0) return;
+        var bestMove = calculateBestMove(3);
+        if (bestMove) {
+            game.move(bestMove);
+            board.position(game.fen());
+            highlightCheckSquare();
+            updateStatus();
+            updateCapturedPieces();
+            checkGameOver();
+        }
+    }, 400);
+}
 
-        // خوارزمية اختيار أفضل حركة بناءً على القيمة الاستراتيجية للقطع
-        var bestMove = moves[0];
-        var bestValue = -99999;
+function calculateBestMove(depth) {
+    var moves = game.moves({ verbose: true });
+    if (moves.length === 0) return null;
 
-        // فرز الحركات لتعزيز قوة الذكاء الاصطناعي
+    var bestValue = -99999;
+    var bestMove = moves[0];
+
+    for (var i = 0; i < moves.length; i++) {
+        game.move(moves[i]);
+        var value = minimax(depth - 1, -100000, 100000, false);
+        game.undo();
+        if (value > bestValue) {
+            bestValue = value;
+            bestMove = moves[i];
+        }
+    }
+    return bestMove;
+}
+
+function minimax(depth, alpha, beta, isMaximizing) {
+    if (depth === 0 || game.game_over()) {
+        return evaluateBoard();
+    }
+
+    var moves = game.moves({ verbose: true });
+    if (isMaximizing) {
+        var maxEval = -99999;
         for (var i = 0; i < moves.length; i++) {
             game.move(moves[i]);
-            var value = evaluateBoard();
+            var evaluation = minimax(depth - 1, alpha, beta, false);
             game.undo();
-            
-            // إضافة عامل عشوائي بسيط لعدم جعل اللعب نمطي مكرر
-            if (value > bestValue) {
-                bestValue = value;
-                bestMove = moves[i];
-            }
+            maxEval = Math.max(maxEval, evaluation);
+            alpha = Math.max(alpha, evaluation);
+            if (beta <= alpha) break;
         }
-
-        game.move(bestMove);
-        board.position(game.fen());
-        highlightCheckSquare();
-        updateStatus();
-        updateCapturedPieces();
-        checkGameOver();
-    }, 400);
+        return maxEval;
+    } else {
+        var minEval = 99999;
+        for (var i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            var evaluation = minimax(depth - 1, alpha, beta, true);
+            game.undo();
+            minEval = Math.min(minEval, evaluation);
+            beta = Math.min(beta, evaluation);
+            if (beta <= alpha) break;
+        }
+        return minEval;
+    }
 }
 
 function evaluateBoard() {
@@ -119,7 +153,7 @@ function onDrop(source, target) {
     var move = game.move({
         from: source,
         to: target,
-        promotion: 'q' // ترقية البيدق تلقائياً إلى وزير لزيادة قوة اللعب
+        promotion: 'q'
     });
 
     if (move === null) return 'snapback';
@@ -136,7 +170,6 @@ function onDrop(source, target) {
     }
 }
 
-// تلوين الملك باللون الأحمر عند الكش
 function highlightCheckSquare() {
     removeCheckHighlights();
     if (game.in_check()) {
@@ -158,15 +191,27 @@ function removeCheckHighlights() {
     $('#board .square-55d63').removeClass('highlight-check');
 }
 
-// عرض مسارات الحركات المتاحة لكل القطع بدقة وثبات
+// عرض الحركات مع ألوان دقيقة: أزرق/بنفسجي للأكل، أخضر للتبييت، ورمادي للحركات العادية
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
     var moves = game.moves({ square: square, verbose: true });
     if (moves.length === 0) return;
 
-    greySquare(square);
+    greySquare(square, 'highlight-move');
     for (var i = 0; i < moves.length; i++) {
-        greySquare(moves[i].to);
+        var targetSquare = moves[i].to;
+        var cssClass = 'highlight-move';
+
+        // إذا كانت الحركة أكل قطعة
+        if (moves[i].captured) {
+            cssClass = 'highlight-capture'; // أزرق / بنفسجي
+        }
+        // إذا كانت حركة استبدال/تبييت (Castling)
+        else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
+            cssClass = 'highlight-castle'; // أخضر
+        }
+
+        greySquare(targetSquare, cssClass);
     }
 }
 
@@ -175,14 +220,12 @@ function onMouseoutSquare(square, piece) {
     highlightCheckSquare();
 }
 
-function greySquare(square) {
-    var el = $('#board .square-' + square);
-    var bg = el.hasClass('black-3c85d') ? '#555555' : '#888888';
-    el.css('background', bg);
+function greySquare(square, className) {
+    $('#board .square-' + square).addClass(className);
 }
 
 function removeHighlights() {
-    $('#board .square-55d63').css('background', '');
+    $('#board .square-55d63').removeClass('highlight-move highlight-capture highlight-castle');
 }
 
 function updateCapturedPieces() {
@@ -216,6 +259,6 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحسب الخطوات بدقة..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل الأنماط بدقة..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
