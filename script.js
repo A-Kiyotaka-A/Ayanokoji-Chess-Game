@@ -3,53 +3,141 @@ var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
 var selectedSquare = null;
+var useStockfish = false; // سيتم تفعيله إذا نجح تحميل Stockfish
+var stockfish = null;
 
 // ==========================================
-// دمج محرك Stockfish (مستوى 3000+ ELO)
+// محاولة تحميل محرك Stockfish (مستوى 3000+)
 // ==========================================
-// نستخدم نسخة Web Worker لتعمل في الخلفية دون تجميد المتصفح
-var stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');
+try {
+    stockfish = new Worker('https://cdn.jsdelivr.net/npm/stockfish.js@10.0.2/stockfish.js');
+    
+    stockfish.onmessage = function(event) {
+        var message = event.data;
+        if (typeof message === 'string' && message.startsWith('bestmove')) {
+            var bestMoveStr = message.split(' ')[1];
+            if (bestMoveStr && bestMoveStr !== '(none)') {
+                var from = bestMoveStr.substring(0, 2);
+                var to = bestMoveStr.substring(2, 4);
+                var promotion = bestMoveStr.length > 4 ? bestMoveStr.substring(4, 5) : 'q';
 
-stockfish.onmessage = function(event) {
-    var message = event.data;
-    // عندما يجد المحرك أفضل حركة، يرسلها بصيغة مثل: "bestmove e2e4" أو "bestmove e7e8q"
-    if (message.startsWith('bestmove')) {
-        var bestMoveStr = message.split(' ')[1];
-        var from = bestMoveStr.substring(0, 2);
-        var to = bestMoveStr.substring(2, 4);
-        var promotion = bestMoveStr.length > 4 ? bestMoveStr.substring(4, 5) : 'q';
+                var isCapture = game.get(to) !== null;
 
-        var isCapture = game.get(to) !== null;
+                var move = game.move({ from: from, to: to, promotion: promotion });
+                if (move) {
+                    board.position(game.fen());
+                    if (isCapture) playSound('capture');
+                    else playSound('move');
 
-        // تنفيذ الحركة في منطق اللعبة
-        game.move({ from: from, to: to, promotion: promotion });
-        
-        // تحديث الرقعة بأنيميشن سلس (بدون false)
-        board.position(game.fen());
+                    removeHighlights();
+                    highlightCheckSquare();
+                    updateStatus();
+                    updateCapturedPieces();
+                    checkGameOver();
+                }
+            }
+        }
+    };
+    
+    stockfish.onerror = function() {
+        console.warn('فشل تحميل Stockfish، سيتم استخدام الذكاء الاصطناعي البديل');
+        useStockfish = false;
+    };
+    
+    stockfish.postMessage('uci');
+    stockfish.postMessage('isready');
+    useStockfish = true;
+} catch (e) {
+    console.warn('Stockfish غير متاح، سيتم استخدام الذكاء الاصطناعي البديل');
+    useStockfish = false;
+}
 
-        if (isCapture) playSound('capture');
-        else playSound('move');
-
-        removeHighlights();
-        highlightCheckSquare();
-        updateStatus();
-        updateCapturedPieces();
-        checkGameOver();
-    }
+// ==========================================
+// الذكاء الاصطناعي البديل (Minimax + PST) - احتياطي
+// ==========================================
+const pieceWeights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+const pst = {
+    p: [[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],
+    n: [[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],
+    b: [[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],
+    r: [[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],
+    q: [[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],
+    k: [[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,0,0,0,0,20,20],[20,30,10,0,0,10,30,20]]
 };
 
-// تهيئة المحرك عند البدء
-stockfish.postMessage('uci');
-stockfish.postMessage('isready');
+function evaluateBoard() {
+    var totalEvaluation = 0;
+    var boardState = game.board();
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            var piece = boardState[i][j];
+            if (piece) {
+                var val = pieceWeights[piece.type];
+                var pstVal = 0;
+                if (pst[piece.type]) {
+                    var row = piece.color === 'w' ? i : 7 - i;
+                    pstVal = pst[piece.type][row][j];
+                }
+                var finalVal = val + pstVal;
+                totalEvaluation += (piece.color === 'w' ? finalVal : -finalVal);
+            }
+        }
+    }
+    return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
+}
+
+function minimax(depth, alpha, beta, isMaximizing) {
+    if (depth === 0 || game.game_over()) return evaluateBoard();
+    var moves = game.moves({ verbose: true });
+    if (isMaximizing) {
+        var maxEval = -999999;
+        for (var i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            var evaluation = minimax(depth - 1, alpha, beta, false);
+            game.undo();
+            maxEval = Math.max(maxEval, evaluation);
+            alpha = Math.max(alpha, evaluation);
+            if (beta <= alpha) break;
+        }
+        return maxEval;
+    } else {
+        var minEval = 999999;
+        for (var i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            var evaluation = minimax(depth - 1, alpha, beta, true);
+            game.undo();
+            minEval = Math.min(minEval, evaluation);
+            beta = Math.min(beta, evaluation);
+            if (beta <= alpha) break;
+        }
+        return minEval;
+    }
+}
+
+function calculateBestMove(depth) {
+    var moves = game.moves({ verbose: true });
+    if (moves.length === 0) return null;
+    moves.sort(function(a, b) { return (b.captured ? 100 : 0) - (a.captured ? 100 : 0); });
+    var bestValue = -999999;
+    var bestMove = moves[0];
+    for (var i = 0; i < moves.length; i++) {
+        game.move(moves[i]);
+        var value = minimax(depth - 1, -1000000, 1000000, false);
+        game.undo();
+        if (value > bestValue) {
+            bestValue = value;
+            bestMove = moves[i];
+        }
+    }
+    return bestMove;
+}
 
 // ==========================================
 // نظام الأصوات
 // ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
     osc.connect(gainNode);
@@ -59,22 +147,19 @@ function playSound(type) {
         osc.frequency.setValueAtTime(400, audioCtx.currentTime);
         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
     } else if (type === 'capture') {
         osc.frequency.setValueAtTime(250, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.2);
         gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.2);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.2);
     } else if (type === 'gameover') {
         osc.frequency.setValueAtTime(600, audioCtx.currentTime);
         osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.15);
         gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.4);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.4);
     }
 }
 
@@ -86,20 +171,14 @@ window.addEventListener('DOMContentLoaded', (event) => {
     document.body.style.backgroundImage = `linear-gradient(rgba(20, 14, 10, 0.88), rgba(20, 14, 10, 0.88)), url('images/${randomBg}.jpg')`;
 
     document.getElementById('fullscreenToggle').addEventListener('click', function() {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-        }
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else if (document.exitFullscreen) document.exitFullscreen();
     });
 
     document.getElementById('hintsToggle').addEventListener('click', function() {
         showHints = !showHints;
         this.style.opacity = showHints ? '1' : '0.4';
-        if (!showHints) {
-            selectedSquare = null;
-            removeHighlights();
-        }
+        if (!showHints) { selectedSquare = null; removeHighlights(); }
     });
 
     $(document).on('click', '#board .square-55d63', function() {
@@ -109,8 +188,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         var classes = $(this).attr('class').split(/\s+/);
         for (var i = 0; i < classes.length; i++) {
             if (classes[i].length === 2 && /^[a-h][1-8]$/.test(classes[i])) {
-                square = classes[i];
-                break;
+                square = classes[i]; break;
             }
         }
         if (!square) return;
@@ -121,24 +199,16 @@ window.addEventListener('DOMContentLoaded', (event) => {
             var moves = game.moves({ square: selectedSquare, verbose: true });
             var targetMatch = false;
             for (var m = 0; m < moves.length; m++) {
-                if (moves[m].to === square) {
-                    targetMatch = true;
-                    break;
-                }
+                if (moves[m].to === square) { targetMatch = true; break; }
             }
 
             if (targetMatch) {
                 var targetPiece = game.get(square);
-                var move = game.move({
-                    from: selectedSquare,
-                    to: square,
-                    promotion: 'q'
-                });
+                var move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
 
                 if (move !== null) {
-                    board.position(game.fen()); // أنيميشن سلس
-                    if (targetPiece) playSound('capture');
-                    else playSound('move');
+                    board.position(game.fen());
+                    if (targetPiece) playSound('capture'); else playSound('move');
 
                     selectedSquare = null;
                     removeHighlights();
@@ -148,9 +218,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                     checkGameOver();
 
                     var aiTurnCheck = (playerColor === 'white') ? 'b' : 'w';
-                    if (game.turn() === aiTurnCheck && !game.game_over()) {
-                        makeAiMove();
-                    }
+                    if (game.turn() === aiTurnCheck && !game.game_over()) makeAiMove();
                     return;
                 }
             }
@@ -185,9 +253,12 @@ function startGame(color) {
     
     game.reset();
     
-    // إخبار محرك Stockfish ببدء لعبة جديدة
-    stockfish.postMessage('ucinewgame');
-    stockfish.postMessage('position startpos');
+    if (useStockfish) {
+        try {
+            stockfish.postMessage('ucinewgame');
+            stockfish.postMessage('position startpos');
+        } catch(e) { useStockfish = false; }
+    }
 
     var config = {
         draggable: true,
@@ -196,7 +267,7 @@ function startGame(color) {
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
         snapbackSpeed: 50,
         snapSpeed: 50,
-        moveSpeed: 300, // أنيميشن سلس ومريح
+        moveSpeed: 300,
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -207,9 +278,7 @@ function startGame(color) {
     updateStatus();
     updateCapturedPieces();
 
-    if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 100);
-    }
+    if (playerColor === 'black') window.setTimeout(makeAiMove, 100);
 }
 
 function resetToMenu() {
@@ -220,16 +289,38 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
+// ==========================================
+// دالة حركة الذكاء الاصطناعي (تختار تلقائياً بين Stockfish أو Minimax)
+// ==========================================
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
-    // إرسال الوضع الحالي للمحرك
-    stockfish.postMessage('position fen ' + game.fen());
+    if (useStockfish) {
+        try {
+            stockfish.postMessage('position fen ' + game.fen());
+            stockfish.postMessage('go depth 18'); // مستوى 3000+ ELO
+            return;
+        } catch(e) {
+            useStockfish = false;
+        }
+    }
     
-    // طلب الحساب بعمق 18 (هذا يضمن مستوى 3000+ ELO مع استجابة سريعة في المتصفح)
-    // يمكنك رفعه إلى 20 إذا أردت تفكيراً أعمق قليلاً (سيأخذ 2-4 ثواني)
-    stockfish.postMessage('go depth 18');
+    // الاحتياطي: Minimax + PST (مستوى ~800 ELO)
+    window.setTimeout(function() {
+        var bestMove = calculateBestMove(3);
+        if (bestMove) {
+            var isCapture = bestMove.captured;
+            game.move(bestMove);
+            board.position(game.fen());
+            if (isCapture) playSound('capture'); else playSound('move');
+            removeHighlights();
+            highlightCheckSquare();
+            updateStatus();
+            updateCapturedPieces();
+            checkGameOver();
+        }
+    }, 50);
 }
 
 function onDragStart(source, piece, position, orientation) {
@@ -242,18 +333,12 @@ function onDragStart(source, piece, position, orientation) {
 
 function onDrop(source, target) {
     var targetPiece = game.get(target);
-    var move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-    });
-
+    var move = game.move({ from: source, to: target, promotion: 'q' });
     if (move === null) return 'snapback';
 
-    board.position(game.fen(), false); // false هنا ضرورية لمنع الوميض عند السحب اليدوي
+    board.position(game.fen(), false);
 
-    if (targetPiece) playSound('capture');
-    else playSound('move');
+    if (targetPiece) playSound('capture'); else playSound('move');
 
     removeHighlights();
     highlightCheckSquare();
@@ -262,9 +347,7 @@ function onDrop(source, target) {
     checkGameOver();
 
     var aiTurnCheck = (playerColor === 'white') ? 'b' : 'w';
-    if (game.turn() === aiTurnCheck && !game.game_over()) {
-        makeAiMove();
-    }
+    if (game.turn() === aiTurnCheck && !game.game_over()) makeAiMove();
 }
 
 function highlightCheckSquare() {
@@ -327,26 +410,19 @@ function removeHighlights() {
 function updateCapturedPieces() {
     var history = game.history({ verbose: true });
     var whiteCaptured = [], blackCaptured = [];
-
     var symbolsWhite = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' };
     var symbolsBlack = { 'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔' };
 
     for (var i = 0; i < history.length; i++) {
         if (history[i].captured) {
             var p = history[i].captured.toUpperCase();
-            if (history[i].color === 'w') {
-                blackCaptured.push(symbolsBlack[p]);
-            } else {
-                whiteCaptured.push(symbolsWhite[p]);
-            }
+            if (history[i].color === 'w') blackCaptured.push(symbolsBlack[p]);
+            else whiteCaptured.push(symbolsWhite[p]);
         }
     }
 
-    if (playerColor === 'white') {
-        $('#opponentCaptured').text(blackCaptured.join(' '));
-    } else {
-        $('#opponentCaptured').text(whiteCaptured.join(' '));
-    }
+    if (playerColor === 'white') $('#opponentCaptured').text(blackCaptured.join(' '));
+    else $('#opponentCaptured').text(whiteCaptured.join(' '));
 }
 
 function checkGameOver() {
@@ -357,7 +433,7 @@ function checkGameOver() {
             if (game.turn() === playerColor[0]) {
                 msg = "لا تيأس إذا رجعت خطوة للوراء، فلا تنسَ أن السهم يحتاج أن ترجعه للوراء لينطلق بقوة إلى الأمام.";
             } else {
-                msg = "أحسنت، تغلبت على أيانوكوجي كيوتاكا."; // (ملاحظة: هزيمة Stockfish صعبة جداً!)
+                msg = "أحسنت، تغلبت على أيانوكوجي كيوتاكا.";
             }
         } else {
             msg = "لقد نجوت هذه المرة بأعجوبة (تعادل).";
@@ -368,6 +444,7 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الموقف بعمق خارق (Stockfish Engine)..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var engineName = useStockfish ? "Stockfish (مستوى 3000+)" : "الذكاء الاصطناعي المحلي";
+    var txt = isThinking ? `أيانوكوجي يحلل الموقف بعمق عبر ${engineName}...` : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
