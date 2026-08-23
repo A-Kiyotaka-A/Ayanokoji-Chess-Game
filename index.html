@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">شطرنج Ayanokoji - المستوى الأسطوري</title>
+    <title>شطرنج Ayanokoji - المستوى الأسطوري</title>
     
     <link rel="icon" href="images/favicon.png" type="image/png">
     <link rel="stylesheet" href="style.css">
@@ -15,20 +15,20 @@
     <div id="startScreen" class="start-screen">
         <div class="start-box">
             <h2>شطرنج كيوتاكا أيانوكوجي</h2>
-            <p>اختر لون القطع لمواجهة العبقري:</p>
+            <p>اختر لون القطع للبدء:</p>
             <div class="color-selection">
-                <button class="color-btn white-choice" onclick="startGame('white')">⚪ الأبيض (تبدأ أولاً)</button>
-                <button class="color-btn black-choice" onclick="startGame('black')">⚫ الأسود (أيانوكوجي يبدأ)</button>
+                <button class="color-btn" id="chooseWhite">⚪ الأبيض (أنت تبدأ أولاً)</button>
+                <button class="color-btn" id="chooseBlack">⚫ الأسود (أيانوكوجي يبدأ أولاً)</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة كش مات الفخمة -->
+    <!-- نافذة كش مات -->
     <div id="gameOverModal" class="game-over-modal" style="display: none;">
         <div class="modal-box">
             <h2 id="winnerTitle">انتهت اللعبة</h2>
             <p id="winnerText"></p>
-            <button class="action-btn" onclick="restartToMenu()">لعبة جديدة</button>
+            <button class="action-btn" id="restartModalBtn">لعبة جديدة</button>
         </div>
     </div>
 
@@ -37,15 +37,9 @@
         <button id="themeToggle" class="setting-btn" title="تغيير المظهر">🌓</button>
         <button id="fullscreenToggle" class="setting-btn" title="تكبير الشاشة">⛶</button>
         <button id="hintsToggle" class="setting-btn" title="إظهار/إخفاء الحركات">💡</button>
-        <select id="langSelect" class="setting-btn">
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-        </select>
     </div>
 
     <div class="main-container">
-        
         <!-- بروفايل أيانوكوجي -->
         <div class="profile-card opponent-card">
             <div class="avatar-container">
@@ -53,8 +47,8 @@
                 <div class="status-dot"></div>
             </div>
             <div class="profile-info">
-                <h3 id="ayanokojiName">أيانوكوجي كيوتاكا</h3>
-                <span class="sub-text quote-text" id="ayanokojiRole">"في هذا العالم، الفوز هو كل شيء؛ لا تهم الطريقة، ولا يهم من يجب التضحية به، طالما أنني أفوز في النهاية، فهذا هو الأهم"</span>
+                <h3>أيانوكوجي كيوتاكا</h3>
+                <span class="sub-text quote-text">"في هذا العالم، الفوز هو كل شيء؛ لا تهم الطريقة، طالما أنني أفوز في النهاية"</span>
                 <div id="opponentCaptured" class="captured-pieces"></div>
             </div>
         </div>
@@ -75,11 +69,10 @@
                 <div class="status-dot online"></div>
             </div>
             <div class="profile-info">
-                <h3 id="playerName">YOU (أنت)</h3>
+                <h3>YOU (أنت)</h3>
                 <div id="playerCaptured" class="captured-pieces"></div>
             </div>
         </div>
-
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
