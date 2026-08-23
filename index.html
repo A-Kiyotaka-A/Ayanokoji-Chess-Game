@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
-    <link rel="icon" type="image/png" href="images/favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 </head>
 <body class="dark-theme">
 
-    <!-- شاشة البداية بزر المثلث داخل الدائرة -->
+    <!-- شاشة البداية -->
     <div id="startScreen" class="start-screen">
         <div class="start-box">
             <h2 style="color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-orange);">شطرنج كيوتاكا أيانوكوجي</h2>
@@ -20,8 +19,8 @@
             </button>
             <div id="colorSelectionBox" class="color-selection" style="display: none; margin-top: 20px;">
                 <p style="color: var(--neon-yellow); font-size: 0.9rem; margin-bottom: 10px;">اختر لون القطع:</p>
-                <button class="color-btn" onclick="startGame('white')">⚪ الأبيض</button>
-                <button class="color-btn" onclick="startGame('black')">⚫ الأسود</button>
+                <button class="color-btn" onclick="startGame('white')">[ الأبيض ]</button>
+                <button class="color-btn" onclick="startGame('black')">[ الأسود ]</button>
             </div>
         </div>
     </div>
@@ -36,10 +35,10 @@
         </div>
     </div>
 
-    <!-- الحاوية الرئيسية مطابقة لرسمتك (الرقعة والشريط يساراً، وأيانوكوجي يميناً) -->
+    <!-- الحاوية الرئيسية -->
     <div class="main-container">
 
-        <!-- القسم الأيسر: رقعة الشطرنج وتحتها شريط الأدوات -->
+        <!-- القسم الأيسر: الرقعة وشريط الأدوات تحتها مباشرة -->
         <div class="left-game-area">
             <div class="board-wrapper">
                 <div id="board"></div>
@@ -48,12 +47,11 @@
                 </div>
             </div>
 
-            <!-- شريط الأدوات تماماً تحت الرقعة -->
+            <!-- شريط الأدوات (بدون زر المظهر) -->
             <div class="tools-bar">
-                <button id="themeToggle" class="setting-btn">🌓 المظهر</button>
-                <button id="fullscreenToggle" class="setting-btn">⛶ ملء الشاشة</button>
-                <button id="hintsToggle" class="setting-btn">♟ الحركات</button>
-                <button class="action-btn legendary-btn" onclick="restartMatch()">إعادة البدء</button>
+                <button id="fullscreenToggle" class="setting-btn">[ ] ملء الشاشة</button>
+                <button id="hintsToggle" class="setting-btn">[#] الحركات</button>
+                <button class="action-btn legendary-btn" onclick="restartMatch()">[↺] إعادة البدء</button>
             </div>
         </div>
 
