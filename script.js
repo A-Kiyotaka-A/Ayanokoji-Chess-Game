@@ -2,6 +2,7 @@ var board = null;
 var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
+var selectedSquare = null; // ميزة النقرة الواحدة الجديدة
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
@@ -51,6 +52,89 @@ window.addEventListener('DOMContentLoaded', (event) => {
     document.getElementById('hintsToggle').addEventListener('click', function() {
         showHints = !showHints;
         this.style.opacity = showHints ? '1' : '0.4';
+        if (!showHints) {
+            selectedSquare = null;
+            removeHighlights();
+        }
+    });
+
+    // تفعيل النقرة الواحدة على مربعات الرقعة
+    $(document).on('click', '#board .square-55d63', function() {
+        if (!showHints || game.game_over()) return;
+        var square = $(this).attr('data-square');
+        if (!square) {
+            // استخراج اسم المربع من الكلاس إذا لم توجد الخاصية
+            var classes = $(this).attr('class').split(/\s+/);
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].length === 2 && /^[a-h][1-8]$/.test(classes[i])) {
+                    square = classes[i];
+                    break;
+                }
+            }
+        }
+        if (!square) return;
+
+        var piece = game.get(square);
+
+        // إذا كان اللاعب ينقر على مربع هدف لنقل القطعة المختارة مسبقاً
+        if (selectedSquare && selectedSquare !== square) {
+            var moves = game.moves({ square: selectedSquare, verbose: true });
+            var targetMatch = false;
+            for (var m = 0; m < moves.length; m++) {
+                if (moves[m].to === square) {
+                    targetMatch = true;
+                    break;
+                }
+            }
+
+            if (targetMatch) {
+                var targetPiece = game.get(square);
+                var move = game.move({
+                    from: selectedSquare,
+                    to: square,
+                    promotion: 'q'
+                });
+
+                if (move !== null) {
+                    board.position(game.fen());
+                    if (targetPiece) playSound('capture');
+                    else playSound('move');
+
+                    selectedSquare = null;
+                    removeHighlights();
+                    highlightCheckSquare();
+                    updateStatus();
+                    updateCapturedPieces();
+                    checkGameOver();
+
+                    var aiTurnCheck = (playerColor === 'white') ? 'b' : 'w';
+                    if (game.turn() === aiTurnCheck && !game.game_over()) {
+                        makeAiMove();
+                    }
+                    return;
+                }
+            }
+        }
+
+        // تحديد القطعة الخاصة باللاعب فقط
+        if (piece && piece.color === playerColor[0]) {
+            if (selectedSquare === square) {
+                // إلغاء التحديد عند النقر مرة أخرى على نفس القطعة
+                selectedSquare = null;
+                removeHighlights();
+                highlightCheckSquare();
+            } else {
+                selectedSquare = square;
+                removeHighlights();
+                highlightCheckSquare();
+                showSquareHints(square, piece);
+            }
+        } else {
+            // النقر على فارغ أو قطعة الخصم يمسح التحديد
+            selectedSquare = null;
+            removeHighlights();
+            highlightCheckSquare();
+        }
     });
 });
 
@@ -61,6 +145,7 @@ function showColorSelection() {
 
 function startGame(color) {
     playerColor = color;
+    selectedSquare = null;
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('gameOverModal').style.display = 'none';
     
@@ -69,7 +154,6 @@ function startGame(color) {
         draggable: true,
         position: 'start',
         orientation: playerColor,
-        // هذا السطر يوجه الرقعة لسحب الصور من مسار موثوق وثابت لمنع الاختفاء والوميض
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
         onDragStart: onDragStart,
         onDrop: onDrop,
@@ -82,11 +166,12 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 50);
+        window.setTimeout(makeAiMove, 100);
     }
 }
 
 function resetToMenu() {
+    selectedSquare = null;
     document.getElementById('gameOverModal').style.display = 'none';
     document.getElementById('colorSelectionBox').style.display = 'none';
     document.querySelector('.play-trigger-btn').style.display = 'flex';
@@ -98,7 +183,8 @@ function makeAiMove() {
     updateStatus(true);
 
     window.setTimeout(function() {
-        var bestMove = calculateBestMove(2); 
+        // استعادة دقة وقوة أيانوكوجي الكاملة (العمق 3 مع حسابات ذكية ودقيقة جداً)
+        var bestMove = calculateBestMove(3); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             
@@ -113,13 +199,14 @@ function makeAiMove() {
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 5); 
+    }, 50); 
 }
 
 function calculateBestMove(depth) {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
 
+    // ترتيب الحركات لرفع كفاءة الخوارزمية (Alpha-Beta Pruning) وضمان الذكاء المطلق
     moves.sort(function(a, b) {
         return (b.captured ? 100 : 0) - (a.captured ? 100 : 0);
     });
@@ -190,6 +277,7 @@ function onDragStart(source, piece, position, orientation) {
     if (game.game_over()) return false;
     if (playerColor === 'white' && piece.search(/^b/) !== -1) return false;
     if (playerColor === 'black' && piece.search(/^w/) !== -1) return false;
+    selectedSquare = null; // إلغاء التحديد بالنقر عند بدء السحب
 }
 
 function onDrop(source, target) {
@@ -218,17 +306,15 @@ function onDrop(source, target) {
 }
 
 function highlightCheckSquare() {
-    removeCheckHighlights();
-    if (game.in_check()) {
-        var boardState = game.board();
-        var kingColor = game.turn();
-        for (var r = 0; r < 8; r++) {
-            for (var c = 0; c < 8; c++) {
-                var piece = boardState[r][c];
-                if (piece && piece.type === 'k' && piece.color === kingColor) {
-                    var squareName = String.fromCharCode(97 + c) + (8 - r);
-                    $('#board .square-' + squareName).addClass('check-square');
-                }
+    if (!game.in_check()) return;
+    var boardState = game.board();
+    var kingColor = game.turn();
+    for (var r = 0; r < 8; r++) {
+        for (var c = 0; c < 8; c++) {
+            var piece = boardState[r][c];
+            if (piece && piece.type === 'k' && piece.color === kingColor) {
+                var squareName = String.fromCharCode(97 + c) + (8 - r);
+                $('#board .square-' + squareName).addClass('check-square');
             }
         }
     }
@@ -238,8 +324,7 @@ function removeCheckHighlights() {
     $('#board .square-55d63').removeClass('check-square');
 }
 
-function onMouseoverSquare(square, piece) {
-    if (!showHints) return;
+function showSquareHints(square, piece) {
     var moves = game.moves({ square: square, verbose: true });
     if (moves.length === 0) return;
 
@@ -263,7 +348,13 @@ function onMouseoverSquare(square, piece) {
     }
 }
 
+function onMouseoverSquare(square, piece) {
+    if (!showHints || selectedSquare) return; // إذا كانت القطعة مثبتة بالنقر، لا نتداخل مع تحويم الماوس
+    showSquareHints(square, piece);
+}
+
 function onMouseoutSquare(square, piece) {
+    if (selectedSquare) return; // الحفاظ على التلميحات ظاهرة إذا كانت القطعة مثبتة بالنقر
     removeHighlights();
     highlightCheckSquare();
 }
@@ -272,6 +363,7 @@ function removeHighlights() {
     $('.move-dot').remove();
     $('.kill-cross').remove();
     $('.castling-arrows').remove();
+    $('#board .square-55d63').removeClass('check-square');
 }
 
 function updateCapturedPieces() {
@@ -318,6 +410,6 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الموقف..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل الموقف بعمق..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
