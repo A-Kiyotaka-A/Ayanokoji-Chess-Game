@@ -92,7 +92,6 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// ضبط العمق إلى 3 مع الحفاظ على الأداء السلس والسريع بفضل الخوارزمية المحسنة
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
@@ -188,7 +187,7 @@ function getAdvancedPieceValue(piece, r, c) {
     var val = weights[piece.type];
 
     if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
-        val += 35; // سيطرة دقيقة واحترافية على المركز
+        val += 35;
     }
 
     if (piece.type === 'p') {
