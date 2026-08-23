@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
-    <link rel="icon" type="image/png" href="images/ayanokoji.png">
+    <title>شطرنج Ayanokoji - </title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 </head>
@@ -14,7 +14,7 @@
     <div id="startScreen" class="start-screen">
         <div class="start-box">
             <h2 style="color: var(--ayanokoji-gold); text-shadow: 0 0 10px var(--ayanokoji-brown);">شطرنج كيوتاكا أيانوكوجي</h2>
-            <p style="color: #d1c7bd; margin-bottom: 25px;">استعد للمواجهة الاستراتيجية الكبرى</p>
+            <p style="color: #d1c7bd; margin-bottom: 25px;">استعد للمواجهة ا</p>
             <button class="play-trigger-btn" onclick="showColorSelection()">
                 <div class="play-triangle"></div>
             </button>
@@ -36,11 +36,26 @@
         </div>
     </div>
 
-    <!-- الحاوية الرئيسية (مطابقة تماماً للمخطط) -->
+    <!-- الحاوية الرئيسية: البروفايل يساراً والرقعة وشريط الأدوات يميناً -->
     <div class="main-container">
 
-        <!-- القسم الأيسر: رقعة الشطرنج وتحتها شريط الأدوات مباشرة -->
-        <div class="left-game-area">
+        <!-- القسم الأيسر: بروفايل أيانوكوجي -->
+        <div class="left-side-panel">
+            <div class="opponent-card">
+                <div class="avatar-container">
+                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
+                </div>
+                <h3>أيانوكوجي كيوتاكا</h3>
+                <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
+                <div style="margin-top: 20px; width: 100%;">
+                    <span style="font-size: 0.85rem; color: #a39585;">القطع المأخوذة</span>
+                    <div id="opponentCaptured" class="captured-pieces"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- القسم الأيمن: رقعة الشطرنج وتحتها شريط الأدوات مباشرة -->
+        <div class="right-game-area">
             <div class="board-wrapper">
                 <div id="board"></div>
                 <div class="game-controls">
@@ -53,21 +68,6 @@
                 <button id="fullscreenToggle" class="setting-btn">[ ] ملء الشاشة</button>
                 <button id="hintsToggle" class="setting-btn">[#] الحركات</button>
                 <button class="action-btn legendary-btn" onclick="restartMatch()">[↺] إعادة البدء</button>
-            </div>
-        </div>
-
-        <!-- القسم الأيمن: بروفايل أيانوكوجي -->
-        <div class="right-side-panel">
-            <div class="opponent-card">
-                <div class="avatar-container">
-                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
-                </div>
-                <h3>أيانوكوجي كيوتاكا</h3>
-                <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
-                <div style="margin-top: 20px; width: 100%;">
-                    <span style="font-size: 0.85rem; color: #a39585;">القطع المأخوذة</span>
-                    <div id="opponentCaptured" class="captured-pieces"></div>
-                </div>
             </div>
         </div>
 
