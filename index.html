@@ -3,102 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شطرنج النخبة - Classroom of the Elite Chess</title>
+    <title>شطرنج النخبة</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
     <link rel="stylesheet" href="style-levels.css">
 </head>
 <body class="dark-theme">
 
-    <!-- زر الإعدادات في الزاوية اليسرى السفلية -->
     <button class="bottom-left-settings" onclick="openSettings()" title="الإعدادات">⚙️</button>
 
-    <!-- حاوية الصفحة الرئيسية -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-content">
+            <h2>إعدادات النظام</h2>
+            <div class="setting-item">
+                <label>فتح جميع المستويات:</label>
+                <button class="setting-btn" onclick="toggleAllLevels()">تفعيل للكل</button>
+            </div>
+            <div class="setting-item">
+                <label>مستوى الإضاءة والنيون:</label>
+                <select class="setting-btn" onchange="changeGlow(this.value)">
+                    <option value="high">قوي</option>
+                    <option value="normal" selected>متوسط</option>
+                    <option value="low">خافت</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>لغة الواجهة:</label>
+                <select class="setting-btn">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <button class="close-settings" onclick="closeSettings()">إغلاق</button>
+        </div>
+    </div>
+
     <div class="levels-container">
         
-        <!-- صورة الشعار logo.jfif في الأعلى -->
         <div class="logo-box">
-            <img src="images/logo.jfif" alt="Classroom of the Elite Logo" class="logo-img">
+            <img src="images/logo.jfif" alt="Logo" class="logo-img">
         </div>
 
         <p class="subtitle">اختر خصمك واصعد في هرم القوة حتى تصل إلى القمة المطلقة</p>
 
-        <!-- شبكة المستويات 3×3 وآخرها أريسو (تصاعدي من 100 إلى 3200) -->
         <div class="levels-grid">
-            <!-- 1. هونامي إيتشينوسي -->
             <div class="level-card" onclick="selectLevel(1)">
-                <div class="avatar-box"><img src="images/1.jpg" alt="Ichinose" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/1.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 100</span>
-                <h3>هونامي إيتشينوسي 🧩</h3>
+                <h3>هونامي إيتشينوسي</h3>
             </div>
-            <!-- 2. سوزوني هوريكيتا -->
             <div class="level-card" onclick="selectLevel(2)">
-                <div class="avatar-box"><img src="images/2.jpg" alt="Horikita" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/2.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 300</span>
-                <h3>سوزوني هوريكيتا ♟️</h3>
+                <h3>سوزوني هوريكيتا</h3>
             </div>
-            <!-- 3. كاكيرو ريون -->
             <div class="level-card" onclick="selectLevel(3)">
-                <div class="avatar-box"><img src="images/3.jpg" alt="Ryuen" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/3.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 600</span>
-                <h3>كاكيرو ريون 🦂</h3>
+                <h3>كاكيرو ريون</h3>
             </div>
-
-            <!-- 4. ميابي ناجومو -->
             <div class="level-card" onclick="selectLevel(4)">
-                <div class="avatar-box"><img src="images/4.jpg" alt="Nagumo" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/4.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 1000</span>
-                <h3>ميابي ناجومو 👑</h3>
+                <h3>ميابي ناجومو</h3>
             </div>
-            <!-- 5. كوهي كاتسوراغي -->
             <div class="level-card" onclick="selectLevel(5)">
-                <div class="avatar-box"><img src="images/5.jpg" alt="Katsuragi" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/5.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 1400</span>
-                <h3>كوهي كاتسوراغي 🛡️</h3>
+                <h3>كوهي كاتسوراغي</h3>
             </div>
-            <!-- 6. مانابو هوريكيتا -->
             <div class="level-card" onclick="selectLevel(6)">
-                <div class="avatar-box"><img src="images/6.jpg" alt="Manabu" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/6.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 1800</span>
-                <h3>مانابو هوريكيتا 🦅</h3>
+                <h3>مانابو هوريكيتا</h3>
             </div>
-
-            <!-- 7. إيكا أماساوا -->
             <div class="level-card" onclick="selectLevel(7)">
-                <div class="avatar-box"><img src="images/7.jpg" alt="Amasawa" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/7.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 2200</span>
-                <h3>إيكا أماساوا 🍓</h3>
+                <h3>إيكا أماساوا</h3>
             </div>
-            <!-- 8. تاكويا ياغامي -->
             <div class="level-card" onclick="selectLevel(8)">
-                <div class="avatar-box"><img src="images/8.jpg" alt="Yagami" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/8.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 2600</span>
-                <h3>تاكويا ياغامي 🎭</h3>
+                <h3>تاكويا ياغامي</h3>
             </div>
-            <!-- 9. روين كوانجي -->
             <div class="level-card" onclick="selectLevel(9)">
-                <div class="avatar-box"><img src="images/9.jpg" alt="Koenji" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/9.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 2900</span>
-                <h3>روين كوانجي ✨</h3>
+                <h3>روين كوانجي</h3>
             </div>
-
-            <!-- 10. أريسو ساكاياناغي -->
             <div class="level-card" onclick="selectLevel(10)">
-                <div class="avatar-box"><img src="images/10.jpg" alt="Arisu" class="char-avatar"></div>
+                <div class="avatar-box"><img src="images/10.jpg" alt="" class="char-avatar"></div>
                 <span class="level-num">Lv. 3200</span>
-                <h3>أريسو ساكاياناغي 👑</h3>
+                <h3>أريسو ساكاياناغي</h3>
             </div>
         </div>
 
-        <!-- 11. المستوى الأخير (كيوتكا أيانوكوجي - منفرد في الأسفل بالصورة القديمة) -->
         <div class="level-card boss-card" onclick="selectLevel(11)">
-            <div class="avatar-box boss-avatar-box"><img src="images/ayanokoji.png" alt="Ayanokoji" class="char-avatar"></div>
+            <div class="avatar-box boss-avatar-box"><img src="images/ayanokoji.png" alt="" class="char-avatar"></div>
             <span class="level-num boss-num">Lv. ????</span>
-            <h3>كيوتكا أيانوكوجي ⚪</h3>
-            <p class="boss-quote">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</p>
+            <h3>كيوتكا أيانوكوجي</h3>
+            <p class="boss-quote">"في هذا العالم، الفوز هو كل شيء."</p>
         </div>
 
     </div>
 
-    <!-- كود الخلفيات العشوائية وزر الإعدادات -->
     <script>
         window.addEventListener('DOMContentLoaded', (event) => {
             var randomBg = Math.floor(Math.random() * 3) + 1;
@@ -110,7 +118,20 @@
         }
 
         function openSettings() {
-            alert("قريباً: نافذة الإعدادات والتحكم بالمستويات!");
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function toggleAllLevels() {
+            alert("تم فتح جميع المستويات بنجاح!");
+            closeSettings();
+        }
+
+        function changeGlow(val) {
+            console.log("Neon level: " + val);
         }
     </script>
 </body>
