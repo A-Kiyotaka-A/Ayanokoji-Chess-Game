@@ -2,7 +2,7 @@ var board = null;
 var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
-var selectedSquare = null; // ميزة التثبيت بالنقر
+var selectedSquare = null;
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
@@ -58,11 +58,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // تفعيل النقر الثابت (يبقى الطريق مفتوحاً حتى تنقر على قطعة أخرى)
-    $(document).on('click', '#board .square-55d63', function(e) {
+    // نظام النقر الثابت والمستقر (يبقى الطريق مفتوحاً حتى تنقر على قطعة أخرى)
+    $(document).on('click', '#board .square-55d63', function() {
         if (!showHints || game.game_over()) return;
         
-        // استخراج اسم المربع بدقة
         var square = null;
         var classes = $(this).attr('class').split(/\s+/);
         for (var i = 0; i < classes.length; i++) {
@@ -75,7 +74,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
         var piece = game.get(square);
 
-        // إذا كان هناك مربع محدد مسبقاً واللاعب يضغط على مربع هدف قانوني للتحرك إليه
         if (selectedSquare && selectedSquare !== square) {
             var moves = game.moves({ square: selectedSquare, verbose: true });
             var targetMatch = false;
@@ -95,7 +93,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    board.position(game.fen());
+                    // تحديث فوري وثابت للرقعة بدون أي وميض
+                    board.position(game.fen(), false);
                     if (targetPiece) playSound('capture');
                     else playSound('move');
 
@@ -115,24 +114,19 @@ window.addEventListener('DOMContentLoaded', (event) => {
             }
         }
 
-        // إذا انقر اللاعب على قطعت الخاصة
         if (piece && piece.color === playerColor[0]) {
             if (selectedSquare === square) {
-                // النقر مرة أخرى على نفس القطعة يلغي التحديد
                 selectedSquare = null;
                 removeHighlights();
                 highlightCheckSquare();
             } else {
-                // تحديد القطعة الجديدة وإبقاء مساراتها مفتوحة وثابتة
                 selectedSquare = square;
                 removeHighlights();
                 highlightCheckSquare();
-                // تمييز المربع المحدد نفسه
                 $('#board .square-' + square).addClass('highlight-selected');
                 showSquareHints(square, piece);
             }
         } else {
-            // النقر على مكان فارغ أو قطعة أخرى يمسح التحديد
             selectedSquare = null;
             removeHighlights();
             highlightCheckSquare();
@@ -185,17 +179,16 @@ function makeAiMove() {
     updateStatus(true);
 
     window.setTimeout(function() {
-        // ذكاء أيانوكوجي العميق والدقيق (Depth 3) مع تفعيل ميزة إظهار تفكيره ومساره كأن بشراً يلعب
         var bestMove = calculateBestMove(3); 
         if (bestMove) {
             var isCapture = bestMove.captured;
             
-            // ميزة بصرية لأيانوكوجي: تمييز القطعة التي سيحركها قبل تنفيذ النقلة لتبدو احترافية
             highlightAiMove(bestMove);
 
             window.setTimeout(function() {
                 game.move(bestMove);
-                board.position(game.fen()); 
+                // استخدام (false) لإلغاء أي انيميشن وهمي يسبب الاختفاء
+                board.position(game.fen(), false); 
                 
                 if (isCapture) playSound('capture');
                 else playSound('move');
@@ -205,9 +198,9 @@ function makeAiMove() {
                 updateStatus();
                 updateCapturedPieces();
                 checkGameOver();
-            }, 300); // مهلة قصيرة لإظهار تركيز أيانوكوجي على القطعة
+            }, 250);
         }
-    }, 100); 
+    }, 50); 
 }
 
 function highlightAiMove(move) {
@@ -305,6 +298,9 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
+    // تحديث فوري للرقعة بدون أي وميض
+    board.position(game.fen(), false);
+
     if (targetPiece) playSound('capture');
     else playSound('move');
 
@@ -360,12 +356,12 @@ function showSquareHints(square, piece) {
 }
 
 function onMouseoverSquare(square, piece) {
-    if (!showHints || selectedSquare) return; // إذا كانت القطعة مثبتة بالنقر، نتجاهل حركة التحويم
+    if (!showHints || selectedSquare) return;
     showSquareHints(square, piece);
 }
 
 function onMouseoutSquare(square, piece) {
-    if (selectedSquare) return; // الحفاظ على التلميحات ظاهرة لأن القطعة مثبتة بالنقر
+    if (selectedSquare) return;
     removeHighlights();
     highlightCheckSquare();
 }
