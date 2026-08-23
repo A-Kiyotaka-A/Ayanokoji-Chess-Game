@@ -1,0 +1,154 @@
+:root {
+    --bg-gradient: linear-gradient(135deg, #2c1810 0%, #4e2713 50%, #d48328 100%);
+    --card-bg: rgba(40, 20, 10, 0.88);
+    --text-color: #f3f3f3;
+    --accent-color: #ff9800;
+}
+
+body.light-theme {
+    --bg-gradient: linear-gradient(135deg, #fdf6ec 0%, #fae1cd 50%, #f7c585 100%);
+    --card-bg: rgba(255, 255, 255, 0.92);
+    --text-color: #2c1810;
+    --accent-color: #d35400;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.5s ease;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 0;
+}
+
+/* بطاقات البروفايل */
+.profile-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: var(--card-bg);
+    padding: 12px 20px;
+    border-radius: 20px;
+    width: 400px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    border: 2px solid var(--accent-color);
+}
+
+.avatar-container {
+    position: relative;
+    width: 55px;
+    height: 55px;
+    flex-shrink: 0;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent-color);
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: #e74c3c;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.status-dot.online {
+    background-color: #2ecc71;
+}
+
+.profile-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* تنسيق خاص للعبارة الفخمة لأيانوكوجي */
+.quote-text {
+    font-style: italic;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #ffcc80;
+    display: block;
+    margin-top: 4px;
+}
+
+body.light-theme .quote-text {
+    color: #b9770e;
+}
+
+/* رقعة الشطرنج في المنتصف */
+.board-wrapper {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    text-align: center;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.game-controls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-btn {
+    background-color: #d35400;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.action-btn:hover {
+    background-color: #e67e22;
+}
+
+#status {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* لوحة الإعدادات في الجزء الأيسر بالأسفل */
+.settings-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 100;
+}
+
+.setting-btn {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
