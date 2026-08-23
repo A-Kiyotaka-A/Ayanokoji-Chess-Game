@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معركة شطرنج النخبة</title>
     <link rel="icon" type="image/png" href="images/favicon.png">
-    <link rel="stylesheet" href="style-levels.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
 
@@ -14,18 +14,20 @@
     <div class="game-container">
         
         <div class="matchup-header">
-            <div class="enemy-display">
+            <div class="enemy-profile">
                 <div class="avatar-box"><img id="enemy-img" src="images/1.jpg" alt="" class="char-avatar"></div>
                 <div>
-                    <h3 id="enemy-name" style="margin:0 0 5px 0;">الخصم</h3>
+                    <h3 id="enemy-name" style="margin:0 0 5px 0; color:#fff;">الخصم</h3>
                     <span class="level-num" id="enemy-level">Lv. --</span>
                 </div>
             </div>
-
-            <div class="vs-badge">معركة ذكاء استراتيجي</div>
+            <div class="vs-badge">VS</div>
         </div>
 
-        <div class="chessboard-area" id="chessboard"></div>
+        <div class="chessboard-area" id="chessboard">
+            <!-- رقعة الشطرنج أو النص المؤقت -->
+            جارِ تحميل رقعة الشطرنج...
+        </div>
 
         <div class="control-bar">
             <button class="game-btn" onclick="undoMove()">تراجع ⟲</button>
@@ -43,7 +45,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             const lvl = urlParams.get('level') || 1;
             updateEnemyInfo(lvl);
-            buildChessBoard();
         });
 
         function updateEnemyInfo(lvl) {
@@ -69,30 +70,10 @@
             }
         }
 
-        function buildChessBoard() {
-            const board = document.getElementById('chessboard');
-            board.innerHTML = '';
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const square = document.createElement('div');
-                    square.className = `chess-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
-                    
-                    square.onclick = function() {
-                        document.querySelectorAll('.move-dot').forEach(d => d.remove());
-                        const dot = document.createElement('div');
-                        dot.className = 'move-dot';
-                        square.appendChild(dot);
-                    };
-
-                    board.appendChild(square);
-                }
-            }
-        }
-
         function undoMove() { alert("تم التراجع."); }
-        function restartGame() { buildChessBoard(); }
+        function restartGame() { alert("إعادة المعركة."); }
         function goBackToLevels() { window.location.href = 'index.html'; }
-        function openSettings() { alert("الإعدادات متاحة في صفحة المستويات الرئيسية."); }
+        function openSettings() { alert("الإعدادات."); }
     </script>
 </body>
 </html>
