@@ -1,298 +1,337 @@
-:root {
-    --ayanokoji-dark: #231912;
-    --ayanokoji-panel: rgba(35, 25, 18, 0.92); 
-    --ayanokoji-brown: #5c3a21;
-    --ayanokoji-gold: #e2b13c;
-    --ayanokoji-red: #c0392b;
-    --text-color: #f3efe6;
+var board = null;
+var game = new Chess();
+var playerColor = 'white';
+var showHints = true;
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playSound(type) {
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'move') {
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } else if (type === 'capture') {
+        osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.2);
+    } else if (type === 'gameover') {
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+    }
 }
 
-body.dark-theme {
-    color: var(--text-color);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+window.addEventListener('DOMContentLoaded', (event) => {
+    var randomBg = Math.floor(Math.random() * 3) + 1;
+    document.body.style.backgroundImage = `linear-gradient(rgba(20, 14, 10, 0.88), rgba(20, 14, 10, 0.88)), url('images/${randomBg}.jpg')`;
+
+    document.getElementById('fullscreenToggle').addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    });
+
+    document.getElementById('hintsToggle').addEventListener('click', function() {
+        showHints = !showHints;
+        this.style.opacity = showHints ? '1' : '0.4';
+    });
+});
+
+function showColorSelection() {
+    document.querySelector('.play-trigger-btn').style.display = 'none';
+    document.getElementById('colorSelectionBox').style.display = 'flex';
 }
 
-.play-trigger-btn {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--ayanokoji-brown), var(--ayanokoji-gold));
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 auto;
-    box-shadow: 0 0 25px rgba(92, 58, 33, 0.7);
-    transition: 0.3s;
+function startGame(color) {
+    playerColor = color;
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('gameOverModal').style.display = 'none';
+    
+    game.reset();
+    var config = {
+        draggable: true,
+        position: 'start',
+        orientation: playerColor,
+        onDragStart: onDragStart,
+        onDrop: onDrop,
+        onMouseoverSquare: onMouseoverSquare,
+        onMouseoutSquare: onMouseoutSquare,
+        onSnapEnd: function() { board.position(game.fen()); }
+    };
+    
+    board = Chessboard('board', config);
+    updateStatus();
+    updateCapturedPieces();
+
+    if (playerColor === 'black') {
+        window.setTimeout(makeAiMove, 50);
+    }
 }
 
-.play-trigger-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 35px var(--ayanokoji-gold);
+function resetToMenu() {
+    document.getElementById('gameOverModal').style.display = 'none';
+    document.getElementById('colorSelectionBox').style.display = 'none';
+    document.querySelector('.play-trigger-btn').style.display = 'flex';
+    document.getElementById('startScreen').style.display = 'flex';
 }
 
-.play-triangle {
-    width: 0;
-    height: 0;
-    border-top: 14px solid transparent;
-    border-bottom: 14px solid transparent;
-    border-left: 22px solid var(--ayanokoji-dark);
-    margin-left: 4px;
+// أداء متوازن وسريع جداً بدقة عالية وثبات
+function makeAiMove() {
+    if (game.game_over()) return;
+    updateStatus(true);
+
+    window.setTimeout(function() {
+        var bestMove = calculateBestMove(2); 
+        if (bestMove) {
+            var isCapture = bestMove.captured;
+            game.move(bestMove);
+            board.position(game.fen());
+            
+            if (isCapture) playSound('capture');
+            else playSound('move');
+
+            highlightCheckSquare();
+            updateStatus();
+            updateCapturedPieces();
+            checkGameOver();
+        }
+    }, 15); 
 }
 
-.main-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 25px;
-    width: 98vw;
-    height: 96vh;
-    max-width: 1450px;
+function calculateBestMove(depth) {
+    var moves = game.moves({ verbose: true });
+    if (moves.length === 0) return null;
+
+    moves.sort(function(a, b) {
+        return (b.captured ? 100 : 0) - (a.captured ? 100 : 0);
+    });
+
+    var bestValue = -999999;
+    var bestMove = moves[0];
+
+    for (var i = 0; i < moves.length; i++) {
+        game.move(moves[i]);
+        var value = minimax(depth - 1, -1000000, 1000000, false);
+        game.undo();
+        if (value > bestValue) {
+            bestValue = value;
+            bestMove = moves[i];
+        }
+    }
+    return bestMove;
 }
 
-/* القسم الأيسر: بروفايل أيانوكوجي */
-.left-side-panel {
-    display: flex;
-    flex-direction: column;
-    width: 300px;
-    height: 92vh;
+function minimax(depth, alpha, beta, isMaximizing) {
+    if (depth === 0 || game.game_over()) {
+        return evaluateBoard();
+    }
+
+    var moves = game.moves({ verbose: true });
+    if (isMaximizing) {
+        var maxEval = -999999;
+        for (var i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            var evaluation = minimax(depth - 1, alpha, beta, false);
+            game.undo();
+            maxEval = Math.max(maxEval, evaluation);
+            alpha = Math.max(alpha, evaluation);
+            if (beta <= alpha) break;
+        }
+        return maxEval;
+    } else {
+        var minEval = 999999;
+        for (var i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            var evaluation = minimax(depth - 1, alpha, beta, true);
+            game.undo();
+            minEval = Math.min(minEval, evaluation);
+            beta = Math.min(beta, evaluation);
+            if (beta <= alpha) break;
+        }
+        return minEval;
+    }
 }
 
-/* القسم الأيمن: رقعة الشطرنج وشريط الأدوات */
-.right-game-area {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
+function evaluateBoard() {
+    var totalEvaluation = 0;
+    var boardState = game.board();
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            var piece = boardState[i][j];
+            if (piece) {
+                totalEvaluation += getAdvancedPieceValue(piece, i, j);
+            }
+        }
+    }
+    return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
 }
 
-.board-wrapper {
-    background: var(--ayanokoji-panel);
-    padding: 15px;
-    border-radius: 20px;
-    border: 2px solid rgba(226, 177, 60, 0.4);
-    box-shadow: 0 0 35px rgba(25, 15, 8, 0.9), 0 0 20px rgba(92, 58, 33, 0.3);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+function getAdvancedPieceValue(piece, r, c) {
+    var weights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
+    var val = weights[piece.type];
+
+    if ((r === 3 || r === 4) && (c === 3 || c === 4)) {
+        val += 30; // سيطرة أفضل على المركز
+    }
+
+    if (piece.type === 'p') {
+        val += (piece.color === 'w' ? (7 - r) : r) * 10;
+    }
+
+    return piece.color === 'w' ? val : -val;
 }
 
-#board {
-    width: 490px !important; 
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+function onDragStart(source, piece, position, orientation) {
+    if (game.game_over()) return false;
+    if (playerColor === 'white' && piece.search(/^b/) !== -1) return false;
+    if (playerColor === 'black' && piece.search(/^w/) !== -1) return false;
 }
 
-.game-controls {
-    margin-top: 5px;
-    width: 100%;
-    text-align: center;
+function onDrop(source, target) {
+    var targetPiece = game.get(target);
+    var move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q'
+    });
+
+    if (move === null) return 'snapback';
+
+    if (targetPiece) playSound('capture');
+    else playSound('move');
+
+    removeHighlights();
+    highlightCheckSquare();
+    updateStatus();
+    updateCapturedPieces();
+    checkGameOver();
+
+    var aiTurnCheck = (playerColor === 'white') ? 'b' : 'w';
+    if (game.turn() === aiTurnCheck && !game.game_over()) {
+        makeAiMove();
+    }
 }
 
-#status {
-    font-size: 0.95rem;
-    color: var(--ayanokoji-gold);
-    font-weight: bold;
-    text-shadow: 0 0 5px rgba(226, 177, 60, 0.4);
+function highlightCheckSquare() {
+    removeCheckHighlights();
+    if (game.in_check()) {
+        var boardState = game.board();
+        var kingColor = game.turn();
+        for (var r = 0; r < 8; r++) {
+            for (var c = 0; c < 8; c++) {
+                var piece = boardState[r][c];
+                if (piece && piece.type === 'k' && piece.color === kingColor) {
+                    var squareName = String.fromCharCode(97 + c) + (8 - r);
+                    $('#board .square-' + squareName).addClass('check-square');
+                }
+            }
+        }
+    }
 }
 
-.tools-bar {
-    background: var(--ayanokoji-panel);
-    border: 2px solid var(--ayanokoji-brown);
-    border-radius: 15px;
-    padding: 10px 15px;
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    justify-content: space-between;
-    box-shadow: 0 0 20px rgba(35, 25, 18, 0.5);
+function removeCheckHighlights() {
+    $('#board .square-55d63').removeClass('check-square');
 }
 
-.opponent-card {
-    background: var(--ayanokoji-panel);
-    border: 2px solid var(--ayanokoji-brown);
-    border-radius: 20px;
-    padding: 25px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    box-shadow: 0 0 25px rgba(92, 58, 33, 0.4), inset 0 0 15px rgba(35, 25, 18, 0.6);
-    backdrop-filter: blur(12px);
-    height: 100%;
-    box-sizing: border-box;
-    justify-content: center;
+function onMouseoverSquare(square, piece) {
+    if (!showHints) return;
+    var moves = game.moves({ square: square, verbose: true });
+    if (moves.length === 0) return;
+
+    for (var i = 0; i < moves.length; i++) {
+        var targetSquare = moves[i].to;
+        var $sq = $('#board .square-' + targetSquare);
+
+        if (moves[i].captured) {
+            if ($sq.length > 0 && $sq.find('.kill-cross').length === 0) {
+                $sq.append('<div class="kill-cross">✕</div>');
+            }
+        } else if (moves[i].san === 'O-O' || moves[i].san === 'O-O-O' || (piece && piece.type === 'k' && Math.abs(square.charCodeAt(0) - targetSquare.charCodeAt(0)) > 1)) {
+            if ($sq.length > 0 && $sq.find('.castling-arrows').length === 0) {
+                $sq.append('<div class="castling-arrows"><span style="display:block;">➔</span><span style="display:block; margin-top:-8px;">⬅</span></div>');
+            }
+        } else {
+            if ($sq.length > 0 && $sq.find('.move-dot').length === 0) {
+                $sq.append('<div class="move-dot"></div>');
+            }
+        }
+    }
 }
 
-.opponent-card .avatar-container {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--ayanokoji-gold);
-    box-shadow: 0 0 15px rgba(226, 177, 60, 0.6);
-    margin-bottom: 15px;
+function onMouseoutSquare(square, piece) {
+    removeHighlights();
+    highlightCheckSquare();
 }
 
-.opponent-card .avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+function removeHighlights() {
+    $('.move-dot').remove();
+    $('.kill-cross').remove();
+    $('.castling-arrows').remove();
 }
 
-.opponent-card h3 {
-    color: #fff;
-    font-size: 1.4rem;
-    text-shadow: 0 0 8px var(--ayanokoji-brown);
-    margin: 10px 0;
+// تحويل الحروف الإنجليزية للقطع المأخوذة إلى رموز شطرنج حقيقية ومرئية
+function updateCapturedPieces() {
+    var history = game.history({ verbose: true });
+    var whiteCaptured = [], blackCaptured = [];
+
+    // خريطة رموز الشطرنج الحقيقية
+    var symbolsWhite = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' };
+    var symbolsBlack = { 'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔' };
+
+    for (var i = 0; i < history.length; i++) {
+        if (history[i].captured) {
+            var p = history[i].captured.toUpperCase();
+            if (history[i].color === 'w') {
+                blackCaptured.push(symbolsBlack[p]);
+            } else {
+                whiteCaptured.push(symbolsWhite[p]);
+            }
+        }
+    }
+
+    if (playerColor === 'white') {
+        $('#opponentCaptured').text(blackCaptured.join(' '));
+    } else {
+        $('#opponentCaptured').text(whiteCaptured.join(' '));
+    }
 }
 
-.quote-text {
-    font-size: 0.9rem;
-    color: var(--ayanokoji-gold);
-    font-style: italic;
-    margin-top: 15px;
-    line-height: 1.5;
-    text-shadow: 0 0 5px rgba(226, 177, 60, 0.3);
+function checkGameOver() {
+    if (game.game_over()) {
+        playSound('gameover');
+        var msg = "";
+        if (game.in_checkmate()) {
+            if (game.turn() === playerColor[0]) {
+                msg = "لا تيأس إذا رجعت خطوة للوراء، فلا تنسَ أن السهم يحتاج أن ترجعه للوراء لينطلق بقوة إلى الأمام.";
+            } else {
+                msg = "أحسنت، تغلبت على أيانوكوجي كيوتاكا.";
+            }
+        } else {
+            msg = "لقد نجوت هذه المرة بأعجوبة (تعادل).";
+        }
+        $('#winnerText').text(msg);
+        document.getElementById('gameOverModal').style.display = 'flex';
+    }
 }
 
-.action-btn, .setting-btn {
-    background: linear-gradient(135deg, #2d2016, #1c130d);
-    color: var(--ayanokoji-gold);
-    border: 1px solid var(--ayanokoji-brown);
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    font-size: 0.8rem;
-    flex: 1;
-    text-align: center;
-}
-
-.action-btn:hover, .setting-btn:hover {
-    background: var(--ayanokoji-brown);
-    color: #fff;
-    box-shadow: 0 0 15px var(--ayanokoji-brown);
-}
-
-.legendary-btn {
-    background: linear-gradient(135deg, #7a431d, #5c3a21);
-    color: white;
-    border: 1px solid var(--ayanokoji-gold);
-}
-
-.captured-pieces {
-    font-size: 1.3rem;
-    min-height: 35px;
-    margin-top: 8px;
-    letter-spacing: 3px;
-    color: var(--ayanokoji-gold);
-}
-
-.start-screen, .game-over-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(20, 14, 10, 0.94);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-}
-
-.start-box, .modal-box {
-    background: var(--ayanokoji-dark);
-    border: 2px solid var(--ayanokoji-brown);
-    padding: 40px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 0 40px rgba(92, 58, 33, 0.5);
-    max-width: 420px;
-}
-
-.color-selection {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    justify-content: center;
-}
-
-.color-btn {
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--ayanokoji-gold);
-    background: #2b1e16;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.color-btn:hover {
-    background: var(--ayanokoji-gold);
-    color: var(--ayanokoji-dark);
-}
-
-.move-dot {
-    width: 18px;
-    height: 18px;
-    background-color: rgba(46, 204, 113, 0.85);
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    box-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
-}
-
-.kill-cross {
-    font-size: 22px;
-    font-weight: bold;
-    color: #e74c3c;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    text-shadow: 0 0 5px rgba(231, 76, 60, 0.8);
-}
-
-.castling-arrows {
-    font-size: 13px;
-    font-weight: bold;
-    color: #3498db;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    text-shadow: 0 0 5px rgba(52, 152, 219, 0.8);
-    text-align: center;
-    line-height: 1;
-}
-
-.check-square {
-    background-color: rgba(231, 76, 60, 0.85) !important;
-    box-shadow: inset 0 0 15px #c0392b;
+function updateStatus(isThinking = false) {
+    var txt = isThinking ? "أيانوكوجي يحلل الموقف..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    $('#status').text(txt);
 }
