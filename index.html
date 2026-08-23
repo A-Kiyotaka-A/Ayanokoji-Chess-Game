@@ -6,16 +6,265 @@
     <title id="pageTitle">شطرنج Ayanokoji</title>
     
     <link rel="icon" href="images/favicon.png" type="image/png">
-    <link rel="stylesheet" href="style.css">
+    <!-- مكتبات الشطرنج الأساسية من الإنترنت -->
     <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2c1810 0%, #4e2713 50%, #d48328 100%);
+            --card-bg: rgba(40, 20, 10, 0.88);
+            --text-color: #f3f3f3;
+            --accent-color: #ff9800;
+        }
+
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #fdf6ec 0%, #fae1cd 50%, #f7c585 100%);
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --text-color: #2c1810;
+            --accent-color: #d35400;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.5s ease;
+        }
+
+        /* شاشة البداية الفخمة */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .start-box {
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            width: 380px;
+        }
+
+        .start-box h2 {
+            margin-top: 0;
+            color: var(--accent-color);
+            font-size: 22px;
+        }
+
+        .color-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        /* أزرار اختيار الألوان الأسطورية الفخمة */
+        .color-btn {
+            background: linear-gradient(135deg, #d35400, #e67e22);
+            color: white;
+            border: 2px solid #ffcc80;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .color-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.5);
+            background: linear-gradient(135deg, #e67e22, #f39c12);
+        }
+
+        /* نافذة كش مات الفخمة */
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 350px;
+        }
+
+        .modal-box h2 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 20px;
+            width: 400px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border: 2px solid var(--accent-color);
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 55px;
+            height: 55px;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .status-dot.online {
+            background-color: #2ecc71;
+        }
+
+        .profile-info h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .quote-text {
+            font-style: italic;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #ffcc80;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .captured-pieces {
+            font-size: 16px;
+            letter-spacing: 2px;
+            min-height: 20px;
+            margin-top: 5px;
+            color: var(--accent-color);
+        }
+
+        .board-wrapper {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            text-align: center;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+
+        .game-controls {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-btn {
+            background-color: #d35400;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: #e67e22;
+        }
+
+        #status {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .settings-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .setting-btn {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--accent-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: 0.2s;
+        }
+        
+        .setting-btn:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+    </style>
 </head>
 <body class="dark-theme">
 
-    <!-- شاشة البداية -->
+    <!-- شاشة البداية الفخمة -->
     <div id="startScreen" class="start-screen">
         <div class="start-box">
             <h2>شطرنج كيوتاكا أيانوكوجي</h2>
-            <p>اختر لون القطع للبدء:</p>
+            <p>اختر لون القطع للبدء ضد العبقري:</p>
             <div class="color-selection">
                 <button class="color-btn" onclick="startGame('white')">⚪ الأبيض (تبدأ أولاً)</button>
                 <button class="color-btn" onclick="startGame('black')">⚫ الأسود (أيانوكوجي يبدأ)</button>
@@ -23,16 +272,16 @@
         </div>
     </div>
 
-    <!-- نافذة إعلان الفائز عند كش مات -->
-    <div id="gameOverModal" class="game-over-modal" style="display: none;">
+    <!-- نافذة كش مات -->
+    <div id="gameOverModal" class="game-over-modal">
         <div class="modal-box">
             <h2 id="winnerTitle">انتهت اللعبة</h2>
             <p id="winnerText"></p>
-            <button class="action-btn" onclick="closeModalAndRestart()">لعبة جديدة</button>
+            <button class="action-btn" onclick="restartToMenu()">لعبة جديدة</button>
         </div>
     </div>
 
-    <!-- أزرار التحكم الجانبية -->
+    <!-- أزرار التحكم -->
     <div class="settings-panel">
         <button id="themeToggle" class="setting-btn" title="تغيير المظهر">🌓</button>
         <button id="fullscreenToggle" class="setting-btn" title="ملء الشاشة">⛶</button>
@@ -46,7 +295,7 @@
 
     <div class="main-container">
         
-        <!-- بروفايل الخصم: أيانوكوجي مع شريط القطع المأخوذة -->
+        <!-- بروفايل الخصم -->
         <div class="profile-card opponent-card">
             <div class="avatar-container">
                 <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
@@ -59,16 +308,16 @@
             </div>
         </div>
 
-        <!-- رقعة الشطرنج -->
+        <!-- الرقعة -->
         <div class="board-wrapper">
             <div id="board" style="width: 380px;"></div>
             <div class="game-controls">
-                <button id="restartBtn" class="action-btn">إعادة اللعبة</button>
+                <button id="restartBtn" class="action-btn">إعادة القائمة</button>
                 <span id="status">الحالة: جاهز</span>
             </div>
         </div>
 
-        <!-- بروفايل اللاعب (YOU) مع شريط القطع المأخوذة -->
+        <!-- بروفايل اللاعب -->
         <div class="profile-card player-card">
             <div class="avatar-container">
                 <img src="images/player.png" alt="YOU" class="avatar">
@@ -82,9 +331,203 @@
 
     </div>
 
+    <!-- المكتبات البرمجية -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="js/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="script.js"></script>
+
+    <script>
+        var board = null;
+        var game = new Chess();
+        var playerColor = 'white';
+        var showHints = true;
+
+        function startGame(color) {
+            playerColor = color;
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameOverModal').style.display = 'none';
+            
+            game.reset();
+            var config = {
+                draggable: true,
+                position: 'start',
+                orientation: playerColor,
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onMouseoverSquare: onMouseoverSquare,
+                onMouseoutSquare: onMouseoutSquare,
+                onSnapEnd: function() { board.position(game.fen()); }
+            };
+            
+            board = Chessboard('board', config);
+            updateStatus();
+            updateCapturedPieces();
+
+            if (playerColor === 'black') {
+                window.setTimeout(makeAiMove, 500);
+            }
+        }
+
+        // خوارزمية ذكية وقوية لمحاكاة مستوى عالي جداً لأيانوكوجي
+        function makeAiMove() {
+            if (game.game_over()) return;
+            updateStatus(true);
+
+            window.setTimeout(function() {
+                var moves = game.moves({ verbose: true });
+                if (moves.length === 0) return;
+
+                // نظام تقييم ذكي يمنح أيانوكوجي قوة حقيقية ولا يجعل الفوز سهلاً
+                var bestMove = moves[0];
+                var bestValue = -9999;
+
+                for (var i = 0; i < moves.length; i++) {
+                    game.move(moves[i]);
+                    var value = evaluateBoard(game.board());
+                    game.undo();
+                    
+                    if (value > bestValue) {
+                        bestValue = value;
+                        bestMove = moves[i];
+                    }
+                }
+
+                game.move(bestMove);
+                board.position(game.fen());
+                updateStatus();
+                updateCapturedPieces();
+                checkGameOver();
+            }, 600);
+        }
+
+        function evaluateBoard(boardState) {
+            var totalEvaluation = 0;
+            for (var i = 0; i < 8; i++) {
+                for (var j = 0; j < 8; j++) {
+                    var piece = boardState[i][j];
+                    if (piece) {
+                        totalEvaluation += getPieceValue(piece, i, j);
+                    }
+                }
+            }
+            return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
+        }
+
+        function getPieceValue(piece, x, y) {
+            var value = 0;
+            switch (piece.type) {
+                case 'p': value = 10; break;
+                case 'r': value = 50; break;
+                case 'n': value = 30; break;
+                case 'b': value = 30; break;
+                case 'q': value = 90; break;
+                case 'k': value = 900; break;
+            }
+            return piece.color === 'w' ? value : -value;
+        }
+
+        function onDragStart(source, piece, position, orientation) {
+            if (game.game_over()) return false;
+            if (playerColor === 'white' && piece.search(/^b/) !== -1) return false;
+            if (playerColor === 'black' && piece.search(/^w/) !== -1) return false;
+        }
+
+        function onDrop(source, target) {
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q'
+            });
+
+            if (move === null) return 'snapback';
+
+            removeGreySquares();
+            updateStatus();
+            updateCapturedPieces();
+            checkGameOver();
+
+            var aiTurnCheck = (playerColor === 'white') ? 'b' : 'w';
+            if (game.turn() === aiTurnCheck && !game.game_over()) {
+                makeAiMove();
+            }
+        }
+
+        function updateCapturedPieces() {
+            var history = game.history({ verbose: true });
+            var whiteCaptured = [];
+            var blackCaptured = [];
+
+            for (var i = 0; i < history.length; i++) {
+                if (history[i].captured) {
+                    var piece = history[i].captured.toUpperCase();
+                    if (history[i].color === 'w') {
+                        blackCaptured.push(getSymbol(piece));
+                    } else {
+                        whiteCaptured.push(getSymbol(piece));
+                    }
+                }
+            }
+
+            if (playerColor === 'white') {
+                $('#playerCaptured').text(whiteCaptured.join(' '));
+                $('#opponentCaptured').text(blackCaptured.join(' '));
+            } else {
+                $('#playerCaptured').text(blackCaptured.join(' '));
+                $('#opponentCaptured').text(whiteCaptured.join(' '));
+            }
+        }
+
+        function getSymbol(piece) {
+            const symbols = { 'P': '♟', 'N': '♞', 'B': '♝', 'R': '♜', 'Q': '♛', 'K': '♚' };
+            return symbols[piece] || '';
+        }
+
+        function checkGameOver() {
+            if (game.game_over()) {
+                var text = game.in_checkmate() ? (game.turn() === playerColor[0] ? "لقد هزمك أيانوكوجي! الفوز هو الأهم دائماً." : "أنت عبقري! لقد هزمت أيانوكوجي!") : "تعادل!";
+                $('#winnerText').text(text);
+                $('#gameOverModal').css('display', 'flex');
+            }
+        }
+
+        function restartToMenu() {
+            document.getElementById('gameOverModal').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+        }
+
+        function onMouseoverSquare(square, piece) {
+            if (!showHints) return;
+            var moves = game.moves({ square: square, verbose: true });
+            if (moves.length === 0) return;
+            greySquare(square);
+            for (var i = 0; i < moves.length; i++) greySquare(moves[i].to);
+        }
+
+        function onMouseoutSquare(square, piece) { removeGreySquares(); }
+
+        function greySquare(square) {
+            var el = $('#board .square-' + square);
+            el.css('background', el.hasClass('black-3c85d') ? '#696969' : '#a9a9a9');
+        }
+
+        function removeGreySquares() { $('#board .square-55d63').css('background', ''); }
+
+        // الأزرار والتفاعلات
+        $('#restartBtn').on('click', function() { restartToMenu(); });
+        $('#themeToggle').on('click', function() { $('body').toggleClass('dark-theme light-theme'); });
+        $('#fullscreenToggle').on('click', function() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        });
+        $('#hintsToggle').on('click', function() {
+            showHints = !showHints;
+            $(this).css('opacity', showHints ? '1' : '0.4');
+        });
+
+        function updateStatus(isThinking = false) {
+            var txt = isThinking ? "أيانوكوجي يفكر بـ استراتيجية..." : (game.turn() === playerColor[0] ? "دورك الآن" : "أيانوكوجي يفكر...");
+            $('#status').text(txt);
+        }
+    </script>
 </body>
 </html>
