@@ -3,91 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
-    
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <title>شطرنج النخبة - Classroom of the Elite Chess</title>
+    <link rel="stylesheet" href="style-levels.css">
 </head>
 <body class="dark-theme">
 
-    <!-- شاشة البداية -->
-    <div id="startScreen" class="start-screen" style="display: flex;">
-        <div class="start-box">
-            <h2 style="color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-orange);">شطرنج كيوتاكا أيانوكوجي</h2>
-            <p style="color: #c5c8c6;">اختر لون القطع لبدء المواجهة الاستراتيجية:</p>
-            <div class="color-selection">
-                <button class="color-btn" onclick="startGame('white')">⚪ الأبيض</button>
-                <button class="color-btn" onclick="startGame('black')">⚫ الأسود</button>
+    <!-- زر الإعدادات في الزاوية اليسرى السفلية -->
+    <button class="bottom-left-settings" onclick="openSettings()" title="الإعدادات">⚙️</button>
+
+    <!-- حاوية الصفحة الرئيسية -->
+    <div class="levels-container">
+        
+        <!-- صورة الشعار logo.jfif في الأعلى -->
+        <div class="logo-box">
+            <img src="images/logo.jfif" alt="Classroom of the Elite Logo" class="logo-img">
+        </div>
+
+        <p class="subtitle">اختر خصمك واصعد في هرم القوة حتى تصل إلى القمة المطلقة</p>
+
+        <!-- شبكة المستويات 3×3 وآخرها أريسو (تصاعدي من 100 إلى 3200) -->
+        <div class="levels-grid">
+            <!-- 1. هونامي إيتشينوسي -->
+            <div class="level-card" onclick="selectLevel(1)">
+                <div class="avatar-box"><img src="images/1.jpg" alt="Ichinose" class="char-avatar"></div>
+                <span class="level-num">Lv. 100</span>
+                <h3>هونامي إيتشينوسي 🧩</h3>
+            </div>
+            <!-- 2. سوزوني هوريكيتا -->
+            <div class="level-card" onclick="selectLevel(2)">
+                <div class="avatar-box"><img src="images/2.jpg" alt="Horikita" class="char-avatar"></div>
+                <span class="level-num">Lv. 300</span>
+                <h3>سوزوني هوريكيتا ♟️</h3>
+            </div>
+            <!-- 3. كاكيرو ريون -->
+            <div class="level-card" onclick="selectLevel(3)">
+                <div class="avatar-box"><img src="images/3.jpg" alt="Ryuen" class="char-avatar"></div>
+                <span class="level-num">Lv. 600</span>
+                <h3>كاكيرو ريون 🦂</h3>
+            </div>
+
+            <!-- 4. ميابي ناجومو -->
+            <div class="level-card" onclick="selectLevel(4)">
+                <div class="avatar-box"><img src="images/4.jpg" alt="Nagumo" class="char-avatar"></div>
+                <span class="level-num">Lv. 1000</span>
+                <h3>ميابي ناجومو 👑</h3>
+            </div>
+            <!-- 5. كوهي كاتسوراغي -->
+            <div class="level-card" onclick="selectLevel(5)">
+                <div class="avatar-box"><img src="images/5.jpg" alt="Katsuragi" class="char-avatar"></div>
+                <span class="level-num">Lv. 1400</span>
+                <h3>كوهي كاتسوراغي 🛡️</h3>
+            </div>
+            <!-- 6. مانابو هوريكيتا -->
+            <div class="level-card" onclick="selectLevel(6)">
+                <div class="avatar-box"><img src="images/6.jpg" alt="Manabu" class="char-avatar"></div>
+                <span class="level-num">Lv. 1800</span>
+                <h3>مانابو هوريكيتا 🦅</h3>
+            </div>
+
+            <!-- 7. إيكا أماساوا -->
+            <div class="level-card" onclick="selectLevel(7)">
+                <div class="avatar-box"><img src="images/7.jpg" alt="Amasawa" class="char-avatar"></div>
+                <span class="level-num">Lv. 2200</span>
+                <h3>إيكا أماساوا 🍓</h3>
+            </div>
+            <!-- 8. تاكويا ياغامي -->
+            <div class="level-card" onclick="selectLevel(8)">
+                <div class="avatar-box"><img src="images/8.jpg" alt="Yagami" class="char-avatar"></div>
+                <span class="level-num">Lv. 2600</span>
+                <h3>تاكويا ياغامي 🎭</h3>
+            </div>
+            <!-- 9. روين كوانجي -->
+            <div class="level-card" onclick="selectLevel(9)">
+                <div class="avatar-box"><img src="images/9.jpg" alt="Koenji" class="char-avatar"></div>
+                <span class="level-num">Lv. 2900</span>
+                <h3>روين كوانجي ✨</h3>
+            </div>
+
+            <!-- 10. أريسو ساكاياناغي -->
+            <div class="level-card" onclick="selectLevel(10)">
+                <div class="avatar-box"><img src="images/10.jpg" alt="Arisu" class="char-avatar"></div>
+                <span class="level-num">Lv. 3200</span>
+                <h3>أريسو ساكاياناغي 👑</h3>
             </div>
         </div>
+
+        <!-- 11. المستوى الأخير (كيوتكا أيانوكوجي - منفرد في الأسفل بالصورة القديمة) -->
+        <div class="level-card boss-card" onclick="selectLevel(11)">
+            <div class="avatar-box boss-avatar-box"><img src="images/ayanokoji.png" alt="Ayanokoji" class="char-avatar"></div>
+            <span class="level-num boss-num">Lv. ????</span>
+            <h3>كيوتكا أيانوكوجي ⚪</h3>
+            <p class="boss-quote">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</p>
+        </div>
+
     </div>
 
-    <!-- نافذة نهاية اللعبة -->
-    <div id="gameOverModal" class="game-over-modal" style="display: none;">
-        <div class="modal-box">
-            <h2 id="winnerTitle" style="color: var(--neon-yellow);">انتهت اللعبة</h2>
-            <p id="winnerText" style="margin: 20px 0; font-size: 1.1rem;"></p>
-            <button class="action-btn legendary-btn" onclick="restartMatch()" style="width: 100%; margin-bottom: 12px; padding: 12px;">إعادة المباراة</button>
-            <button class="action-btn" onclick="resetToMenu()" style="width: 100%; padding: 12px;">القائمة الرئيسية</button>
-        </div>
-    </div>
+    <!-- كود الخلفيات العشوائية وزر الإعدادات -->
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            var randomBg = Math.floor(Math.random() * 3) + 1;
+            document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
+        });
 
-    <!-- الحاوية الرئيسية بالتخطيط الجديد المرتب -->
-    <div class="main-container">
+        function selectLevel(lvl) {
+            window.location.href = `game.html?level=${lvl}`;
+        }
 
-        <!-- 1. بروفايل اللاعب (على اليسار - طويل من الأعلى للأسفل) -->
-        <div class="player-side-panel">
-            <div style="text-align: center; width: 100%;">
-                <div class="avatar-container" style="margin: 0 auto 15px auto;">
-                    <img src="images/player.png" alt="YOU" class="avatar">
-                </div>
-                <h3>اللاعب</h3>
-            </div>
-            <div style="text-align: center; width: 100%;">
-                <span style="font-size: 0.85rem; color: #888;">القطع المأخوذة</span>
-                <div id="playerCaptured" class="captured-pieces"></div>
-            </div>
-            <button class="action-btn" onclick="resetToMenu()" style="width: 100%;">القائمة</button>
-        </div>
-
-        <!-- 2. رقعة الشطرنج (في المنتصف - ضخمة وبارزة) -->
-        <div class="board-wrapper">
-            <div id="board"></div>
-            <div class="game-controls">
-                <span id="status">الحالة: جاهز</span>
-            </div>
-        </div>
-
-        <!-- 3. الجانب الأيمن (بروفايل أيانوكوجي + أزرار التحكم تحته) -->
-        <div class="right-side-panel">
-            <!-- بروفايل أيانوكوجي -->
-            <div class="opponent-card">
-                <div class="avatar-container">
-                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
-                </div>
-                <h3>أيانوكوجي كيوتاكا</h3>
-                <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
-                <div style="margin-top: 15px; width: 100%;">
-                    <span style="font-size: 0.85rem; color: #888;">القطع المأخوذة</span>
-                    <div id="opponentCaptured" class="captured-pieces"></div>
-                </div>
-            </div>
-
-            <!-- علبة الأزرار في الأسفل على اليمين -->
-            <div class="settings-box">
-                <button id="themeToggle" class="setting-btn">🌓 تبديل المظهر</button>
-                <button id="fullscreenToggle" class="setting-btn">⛶ ملء الشاشة</button>
-                <button id="hintsToggle" class="setting-btn">♟ إظهار الحركات</button>
-                <button class="action-btn legendary-btn" onclick="restartMatch()">إعادة المباراة</button>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- المكتبات الأساسية -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script src="script.js?v=4"></script>
+        function openSettings() {
+            alert("قريباً: نافذة الإعدادات والتحكم بالمستويات!");
+        }
+    </script>
 </body>
 </html>
