@@ -58,7 +58,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // نظام النقر الثابت والمستقر (يبقى الطريق مفتوحاً حتى تنقر على قطعة أخرى)
     $(document).on('click', '#board .square-55d63', function() {
         if (!showHints || game.game_over()) return;
         
@@ -93,7 +92,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    // تحديث فوري وثابت للرقعة بدون أي وميض
                     board.position(game.fen(), false);
                     if (targetPiece) playSound('capture');
                     else playSound('move');
@@ -151,6 +149,9 @@ function startGame(color) {
         position: 'start',
         orientation: playerColor,
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
+        // إضافات لتحسين سلاسة الحركة ومنع الوميض أو الاختفاء البصري
+        snapbackSpeed: 100,
+        snapSpeed: 100,
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -187,7 +188,6 @@ function makeAiMove() {
 
             window.setTimeout(function() {
                 game.move(bestMove);
-                // استخدام (false) لإلغاء أي انيميشن وهمي يسبب الاختفاء
                 board.position(game.fen(), false); 
                 
                 if (isCapture) playSound('capture');
@@ -298,7 +298,6 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
-    // تحديث فوري للرقعة بدون أي وميض
     board.position(game.fen(), false);
 
     if (targetPiece) playSound('capture');
