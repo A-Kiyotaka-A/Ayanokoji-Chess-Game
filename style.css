@@ -291,3 +291,7 @@ body.dark-theme {
     pointer-events: none !important;
     z-index: 1 !important; /* لضمان بقائها تحت القطعة المسحوبة */
 }
+/* إخفاء فوري لأي قطعة مكررة داخل نفس المربع */
+.square-55d63 img.piece-417db:not(:last-child) {
+    display: none !important;
+}
