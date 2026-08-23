@@ -3,31 +3,31 @@ var game = new Chess();
 var playerColor = 'white';
 var showHints = true;
 
-$(document).ready(function() {
-    // تفعيل أزرار البداية
-    $('#chooseWhite').on('click', function() { startGame('white'); });
-    $('#chooseBlack').on('click', function() { startGame('black'); });
-    $('#restartBtn, #restartModalBtn').on('click', function() {
-        $('#gameOverModal').hide();
-        $('#startScreen').css('display', 'flex');
+// تشغيل الأزرار الجانبية مباشرة عند تحميل الصفحة
+window.addEventListener('DOMContentLoaded', (event) => {
+    document.getElementById('themeToggle').addEventListener('click', function() {
+        document.body.classList.toggle('dark-theme');
+        document.body.classList.toggle('light-theme');
     });
 
-    // الأزرار الجانبية
-    $('#themeToggle').on('click', function() { $('body').toggleClass('dark-theme light-theme'); });
-    $('#fullscreenToggle').on('click', function() {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-        else if (document.exitFullscreen) document.exitFullscreen();
+    document.getElementById('fullscreenToggle').addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
     });
-    $('#hintsToggle').on('click', function() {
+
+    document.getElementById('hintsToggle').addEventListener('click', function() {
         showHints = !showHints;
-        $(this).css('opacity', showHints ? '1' : '0.4');
+        this.style.opacity = showHints ? '1' : '0.4';
     });
 });
 
 function startGame(color) {
     playerColor = color;
-    $('#startScreen').hide();
-    $('#gameOverModal').hide();
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('gameOverModal').style.display = 'none';
     
     game.reset();
     var config = {
@@ -50,7 +50,12 @@ function startGame(color) {
     }
 }
 
-// ذكاء اصطناعي قوي
+function resetToMenu() {
+    document.getElementById('gameOverModal').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex';
+}
+
+// ذكاء اصطناعي لأيانوكوجي
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
@@ -78,7 +83,7 @@ function makeAiMove() {
         updateStatus();
         updateCapturedPieces();
         checkGameOver();
-    }, 500);
+    }, 400);
 }
 
 function evaluateBoard() {
@@ -124,7 +129,7 @@ function onDrop(source, target) {
     }
 }
 
-// ميزة تلوين الملك باللون الأحمر عند الكش (Check)
+// تلوين الملك باللون الأحمر عند الكش
 function highlightCheckSquare() {
     removeCheckHighlights();
     if (game.in_check()) {
@@ -146,7 +151,7 @@ function removeCheckHighlights() {
     $('#board .square-55d63').removeClass('highlight-check');
 }
 
-// ميزة إظهار المربعات المتاحة للحركات عند الوقوف على القطعة
+// إظهار المربعات المتاحة عند الوقوف على القطعة
 function onMouseoverSquare(square, piece) {
     if (!showHints) return;
     var moves = game.moves({ square: square, verbose: true });
@@ -199,11 +204,11 @@ function checkGameOver() {
     if (game.game_over()) {
         var msg = game.in_checkmate() ? (game.turn() === playerColor[0] ? "هزمك أيانوكوجي! الفوز هو الأهم." : "أنت أسطورة! لقد هزمت أيانوكوجي!") : "تعادل!";
         $('#winnerText').text(msg);
-        $('#gameOverModal').css('display', 'flex');
+        document.getElementById('gameOverModal').style.display = 'flex';
     }
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل..." : (game.turn() === playerColor[0] ? "دورك الآن" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
