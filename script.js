@@ -81,7 +81,7 @@ function startGame(color) {
     updateCapturedPieces();
 
     if (playerColor === 'black') {
-        window.setTimeout(makeAiMove, 200);
+        window.setTimeout(makeAiMove, 50);
     }
 }
 
@@ -97,11 +97,12 @@ function resetToMenu() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
-// تسريع أيانوكوجي باستخدام عمق 3 مع الحفاظ التام على الذكاء والدقة والفعالية
+// تسريع أداء أيانوكوجي لأقصى حد فوري (بدون تأخير زمني وبذكاء عالي)
 function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
+    // استخدام setTimeout بقيمة 10 ملي ثانية لتحديث الواجهة ثم تنفيذ الخوارزمية فوراً
     window.setTimeout(function() {
         var bestMove = calculateBestMove(3); 
         if (bestMove) {
@@ -117,19 +118,20 @@ function makeAiMove() {
             updateCapturedPieces();
             checkGameOver();
         }
-    }, 50); 
+    }, 10); 
 }
 
 function calculateBestMove(depth) {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
 
+    // ترتيب الحركات المسبق لتعزيز كفاءة Alpha-Beta Pruning وتسريع البحث فوراً
+    moves.sort(function(a, b) {
+        return (b.captured ? 50 : 0) - (a.captured ? 50 : 0);
+    });
+
     var bestValue = -999999;
     var bestMove = moves[0];
-
-    moves.sort(function(a, b) {
-        return (b.captured ? 20 : 0) - (a.captured ? 20 : 0);
-    });
 
     for (var i = 0; i < moves.length; i++) {
         game.move(moves[i]);
