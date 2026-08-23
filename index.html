@@ -13,8 +13,8 @@
     <!-- شاشة البداية -->
     <div id="startScreen" class="start-screen" style="display: flex;">
         <div class="start-box">
-            <h2>شطرنج كيوتاكا أيانوكوجي</h2>
-            <p>اختر لون القطع لمواجهة العبقري المطلق:</p>
+            <h2 style="color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-orange);">شطرنج كيوتاكا أيانوكوجي</h2>
+            <p style="color: #c5c8c6;">اختر لون القطع لبدء المواجهة الاستراتيجية:</p>
             <div class="color-selection">
                 <button class="color-btn" onclick="startGame('white')">⚪ الأبيض</button>
                 <button class="color-btn" onclick="startGame('black')">⚫ الأسود</button>
@@ -25,52 +25,55 @@
     <!-- نافذة نهاية اللعبة -->
     <div id="gameOverModal" class="game-over-modal" style="display: none;">
         <div class="modal-box">
-            <h2 id="winnerTitle">انتهت اللعبة</h2>
-            <p id="winnerText"></p>
-            <button class="action-btn legendary-btn" onclick="restartMatch()" style="width: 100%; margin-bottom: 10px;">إعادة المباراة</button>
-            <button class="action-btn" onclick="resetToMenu()" style="width: 100%;">القائمة الرئيسية</button>
+            <h2 id="winnerTitle" style="color: var(--neon-yellow);">انتهت اللعبة</h2>
+            <p id="winnerText" style="margin: 20px 0; font-size: 1.1rem;"></p>
+            <button class="action-btn legendary-btn" onclick="restartMatch()" style="width: 100%; margin-bottom: 12px; padding: 12px;">إعادة المباراة</button>
+            <button class="action-btn" onclick="resetToMenu()" style="width: 100%; padding: 12px;">القائمة الرئيسية</button>
         </div>
     </div>
 
-    <!-- 1. شريط الشعار العلوي -->
-    <div class="top-banner">
-        <span>Ayanokoji Chess Arena</span>
-    </div>
-
-    <!-- الحاوية الرئيسية (يسار: اللاعب | وسط: الرقعة | يمين: أيانوكوجي والأزرار) -->
+    <!-- الحاوية الرئيسية بالتخطيط الجديد المرتب -->
     <div class="main-container">
 
-        <!-- 2. بروفايل اللاعب (على اليسار) -->
+        <!-- 1. بروفايل اللاعب (على اليسار - طويل من الأعلى للأسفل) -->
         <div class="player-side-panel">
-            <div class="avatar-container">
-                <img src="images/player.png" alt="YOU" class="avatar">
+            <div style="text-align: center; width: 100%;">
+                <div class="avatar-container" style="margin: 0 auto 15px auto;">
+                    <img src="images/player.png" alt="YOU" class="avatar">
+                </div>
+                <h3>اللاعب</h3>
             </div>
-            <h3>اللاعب (أنت)</h3>
-            <div id="playerCaptured" class="captured-pieces"></div>
+            <div style="text-align: center; width: 100%;">
+                <span style="font-size: 0.85rem; color: #888;">القطع المأخوذة</span>
+                <div id="playerCaptured" class="captured-pieces"></div>
+            </div>
+            <button class="action-btn" onclick="resetToMenu()" style="width: 100%;">القائمة</button>
         </div>
 
-        <!-- 3. رقعة الشطرنج (في المنتصف) -->
+        <!-- 2. رقعة الشطرنج (في المنتصف - ضخمة وبارزة) -->
         <div class="board-wrapper">
-            <div id="board" style="width: 400px;"></div>
+            <div id="board"></div>
             <div class="game-controls">
                 <span id="status">الحالة: جاهز</span>
-                <button class="action-btn" onclick="resetToMenu()" style="padding: 5px 12px; font-size: 0.8rem;">القائمة</button>
             </div>
         </div>
 
-        <!-- 4. الجانب الأيمن (عبوة أيانوكوجي فوق + علبة الأزرار تحتها) -->
+        <!-- 3. الجانب الأيمن (بروفايل أيانوكوجي + أزرار التحكم تحته) -->
         <div class="right-side-panel">
-            <!-- بروفايل أيانوكوجي العمودي -->
+            <!-- بروفايل أيانوكوجي -->
             <div class="opponent-card">
                 <div class="avatar-container">
                     <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
                 </div>
                 <h3>أيانوكوجي كيوتاكا</h3>
-                <span class="quote-text">"البشر مجرد أدوات، والحسابات لا تخطئ."</span>
-                <div id="opponentCaptured" class="captured-pieces"></div>
+                <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
+                <div style="margin-top: 15px; width: 100%;">
+                    <span style="font-size: 0.85rem; color: #888;">القطع المأخوذة</span>
+                    <div id="opponentCaptured" class="captured-pieces"></div>
+                </div>
             </div>
 
-            <!-- علبة الأزرار والتتبيثات -->
+            <!-- علبة الأزرار في الأسفل على اليمين -->
             <div class="settings-box">
                 <button id="themeToggle" class="setting-btn">🌓 تبديل المظهر</button>
                 <button id="fullscreenToggle" class="setting-btn">⛶ ملء الشاشة</button>
@@ -85,6 +88,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
