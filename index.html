@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
+    <link rel="icon" type="image/png" href="images/ayanokoji.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
 </head>
@@ -12,13 +13,13 @@
     <!-- شاشة البداية -->
     <div id="startScreen" class="start-screen">
         <div class="start-box">
-            <h2 style="color: var(--neon-yellow); text-shadow: 0 0 10px var(--neon-orange);">شطرنج كيوتاكا أيانوكوجي</h2>
-            <p style="color: #c5c8c6; margin-bottom: 25px;">استعد للمواجهة الاستراتيجية الكبرى</p>
+            <h2 style="color: var(--ayanokoji-gold); text-shadow: 0 0 10px var(--ayanokoji-brown);">شطرنج كيوتاكا أيانوكوجي</h2>
+            <p style="color: #d1c7bd; margin-bottom: 25px;">استعد للمواجهة الاستراتيجية الكبرى</p>
             <button class="play-trigger-btn" onclick="showColorSelection()">
                 <div class="play-triangle"></div>
             </button>
             <div id="colorSelectionBox" class="color-selection" style="display: none; margin-top: 20px;">
-                <p style="color: var(--neon-yellow); font-size: 0.9rem; margin-bottom: 10px;">اختر لون القطع:</p>
+                <p style="color: var(--ayanokoji-gold); font-size: 0.9rem; margin-bottom: 10px;">اختر لون القطع:</p>
                 <button class="color-btn" onclick="startGame('white')">[ الأبيض ]</button>
                 <button class="color-btn" onclick="startGame('black')">[ الأسود ]</button>
             </div>
@@ -28,17 +29,17 @@
     <!-- نافذة نهاية اللعبة -->
     <div id="gameOverModal" class="game-over-modal" style="display: none;">
         <div class="modal-box">
-            <h2 id="winnerTitle" style="color: var(--neon-yellow);">انتهت اللعبة</h2>
+            <h2 id="winnerTitle" style="color: var(--ayanokoji-gold);">انتهت اللعبة</h2>
             <p id="winnerText" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.6;"></p>
             <button class="action-btn legendary-btn" onclick="restartMatch()" style="width: 100%; margin-bottom: 12px; padding: 12px;">إعادة المباراة</button>
             <button class="action-btn" onclick="resetToMenu()" style="width: 100%; padding: 12px;">القائمة الرئيسية</button>
         </div>
     </div>
 
-    <!-- الحاوية الرئيسية -->
+    <!-- الحاوية الرئيسية (مطابقة تماماً للمخطط) -->
     <div class="main-container">
 
-        <!-- القسم الأيسر: الرقعة وشريط الأدوات تحتها مباشرة -->
+        <!-- القسم الأيسر: رقعة الشطرنج وتحتها شريط الأدوات مباشرة -->
         <div class="left-game-area">
             <div class="board-wrapper">
                 <div id="board"></div>
@@ -47,7 +48,7 @@
                 </div>
             </div>
 
-            <!-- شريط الأدوات (بدون زر المظهر) -->
+            <!-- شريط الأدوات العرضي تحت الرقعة -->
             <div class="tools-bar">
                 <button id="fullscreenToggle" class="setting-btn">[ ] ملء الشاشة</button>
                 <button id="hintsToggle" class="setting-btn">[#] الحركات</button>
@@ -64,7 +65,7 @@
                 <h3>أيانوكوجي كيوتاكا</h3>
                 <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
                 <div style="margin-top: 20px; width: 100%;">
-                    <span style="font-size: 0.85rem; color: #888;">القطع المأخوذة</span>
+                    <span style="font-size: 0.85rem; color: #a39585;">القطع المأخوذة</span>
                     <div id="opponentCaptured" class="captured-pieces"></div>
                 </div>
             </div>
