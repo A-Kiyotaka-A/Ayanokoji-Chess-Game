@@ -82,14 +82,7 @@ body {
 .settings-panel { position: fixed; bottom: 20px; left: 20px; display: flex; gap: 10px; z-index: 100; }
 .setting-btn { background: var(--card-bg); color: var(--text-color); border: 1px solid var(--accent-color); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-/* زر إعادة المباراة بتصميم أسطوري */
 .legendary-btn {
     background: linear-gradient(135deg, #d35400, #8e44ad);
     border: 1px solid #ffcc80;
 }
-
-/* ألوان مسارات الحركات */
-.highlight-check { background-color: rgba(231, 76, 60, 0.8) !important; }
-.highlight-move { background-color: rgba(100, 100, 100, 0.5) !important; }
-.highlight-capture { background-color: rgba(142, 68, 173, 0.7) !important; /* أزرق/بنفسجي للأكل */ }
-.highlight-castle { background-color: rgba(46, 204, 113, 0.7) !important; /* أخضر للتبييت */ }
