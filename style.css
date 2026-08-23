@@ -344,3 +344,16 @@ body.dark-theme {
     color: #000;
     box-shadow: 0 0 20px var(--neon-orange);
 }
+.move-dot {
+    width: 14px;
+    height: 14px;
+    background-color: var(--neon-green, #2ecc71);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px var(--neon-green, #2ecc71);
+    z-index: 10;
+    pointer-events: none;
+}
