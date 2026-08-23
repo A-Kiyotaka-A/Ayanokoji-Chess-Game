@@ -4,6 +4,47 @@ var playerColor = 'white';
 var showHints = true;
 var selectedSquare = null;
 
+// ==========================================
+// دمج محرك Stockfish (مستوى 3000+ ELO)
+// ==========================================
+// نستخدم نسخة Web Worker لتعمل في الخلفية دون تجميد المتصفح
+var stockfish = new Worker('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js');
+
+stockfish.onmessage = function(event) {
+    var message = event.data;
+    // عندما يجد المحرك أفضل حركة، يرسلها بصيغة مثل: "bestmove e2e4" أو "bestmove e7e8q"
+    if (message.startsWith('bestmove')) {
+        var bestMoveStr = message.split(' ')[1];
+        var from = bestMoveStr.substring(0, 2);
+        var to = bestMoveStr.substring(2, 4);
+        var promotion = bestMoveStr.length > 4 ? bestMoveStr.substring(4, 5) : 'q';
+
+        var isCapture = game.get(to) !== null;
+
+        // تنفيذ الحركة في منطق اللعبة
+        game.move({ from: from, to: to, promotion: promotion });
+        
+        // تحديث الرقعة بأنيميشن سلس (بدون false)
+        board.position(game.fen());
+
+        if (isCapture) playSound('capture');
+        else playSound('move');
+
+        removeHighlights();
+        highlightCheckSquare();
+        updateStatus();
+        updateCapturedPieces();
+        checkGameOver();
+    }
+};
+
+// تهيئة المحرك عند البدء
+stockfish.postMessage('uci');
+stockfish.postMessage('isready');
+
+// ==========================================
+// نظام الأصوات
+// ==========================================
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
     if (audioCtx.state === 'suspended') {
@@ -37,6 +78,9 @@ function playSound(type) {
     }
 }
 
+// ==========================================
+// أحداث واجهة المستخدم
+// ==========================================
 window.addEventListener('DOMContentLoaded', (event) => {
     var randomBg = Math.floor(Math.random() * 3) + 1;
     document.body.style.backgroundImage = `linear-gradient(rgba(20, 14, 10, 0.88), rgba(20, 14, 10, 0.88)), url('images/${randomBg}.jpg')`;
@@ -58,7 +102,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // ميزة تثبيت المسارات بالنقر وتطبيق النقل الفوري
     $(document).on('click', '#board .square-55d63', function() {
         if (!showHints || game.game_over()) return;
         
@@ -93,9 +136,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    // التحديث الفوري بدون أنيميشن يمنع بقاء القطعتين فوق بعضهما
-                    board.position(game.fen(), false);
-                    
+                    board.position(game.fen()); // أنيميشن سلس
                     if (targetPiece) playSound('capture');
                     else playSound('move');
 
@@ -143,17 +184,21 @@ function startGame(color) {
     document.getElementById('gameOverModal').style.display = 'none';
     
     game.reset();
+    
+    // إخبار محرك Stockfish ببدء لعبة جديدة
+    stockfish.postMessage('ucinewgame');
+    stockfish.postMessage('position startpos');
+
     var config = {
         draggable: true,
         position: 'start',
         orientation: playerColor,
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-        snapbackSpeed: 0,
-        snapSpeed: 0,
-        moveSpeed: 0,
+        snapbackSpeed: 50,
+        snapSpeed: 50,
+        moveSpeed: 300, // أنيميشن سلس ومريح
         onDragStart: onDragStart,
         onDrop: onDrop,
-        onSnapEnd: onSnapEnd,
         onMouseoverSquare: onMouseoverSquare,
         onMouseoutSquare: onMouseoutSquare
     };
@@ -179,180 +224,12 @@ function makeAiMove() {
     if (game.game_over()) return;
     updateStatus(true);
 
-    window.setTimeout(function() {
-        var bestMove = calculateBestMove(3); 
-        if (bestMove) {
-            var isCapture = bestMove.captured;
-            
-            highlightAiMove(bestMove);
-
-            window.setTimeout(function() {
-                game.move(bestMove);
-                
-                // تحديث مباشر وفوري للرقعة بدون تأخير أنيميشن
-                board.position(game.fen(), false);
-                
-                if (isCapture) playSound('capture');
-                else playSound('move');
-
-                removeHighlights();
-                highlightCheckSquare();
-                updateStatus();
-                updateCapturedPieces();
-                checkGameOver();
-            }, 250);
-        }
-    }, 50); 
-}
-
-function highlightAiMove(move) {
-    removeHighlights();
-    var $fromSq = $('#board .square-' + move.from);
-    $fromSq.addClass('highlight-ai-source');
-    showSquareHints(move.from, game.get(move.from));
-}
-
-function calculateBestMove(depth) {
-    var moves = game.moves({ verbose: true });
-    if (moves.length === 0) return null;
-
-    moves.sort(function(a, b) {
-        return (b.captured ? 100 : 0) - (a.captured ? 100 : 0);
-    });
-
-    var bestValue = -999999;
-    var bestMove = moves[0];
-
-    for (var i = 0; i < moves.length; i++) {
-        game.move(moves[i]);
-        var value = minimax(depth - 1, -1000000, 1000000, false);
-        game.undo();
-        if (value > bestValue) {
-            bestValue = value;
-            bestMove = moves[i];
-        }
-    }
-    return bestMove;
-}
-
-function minimax(depth, alpha, beta, isMaximizing) {
-    if (depth === 0 || game.game_over()) {
-        return evaluateBoard();
-    }
-
-    var moves = game.moves({ verbose: true });
-    if (isMaximizing) {
-        var maxEval = -999999;
-        for (var i = 0; i < moves.length; i++) {
-            game.move(moves[i]);
-            var evaluation = minimax(depth - 1, alpha, beta, false);
-            game.undo();
-            maxEval = Math.max(maxEval, evaluation);
-            alpha = Math.max(alpha, evaluation);
-            if (beta <= alpha) break;
-        }
-        return maxEval;
-    } else {
-        var minEval = 999999;
-        for (var i = 0; i < moves.length; i++) {
-            game.move(moves[i]);
-            var evaluation = minimax(depth - 1, alpha, beta, true);
-            game.undo();
-            minEval = Math.min(minEval, evaluation);
-            beta = Math.min(beta, evaluation);
-            if (beta <= alpha) break;
-        }
-        return minEval;
-    }
-}
-
-const pieceWeights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
-
-const pst = {
-    p: [
-        [ 0,  0,  0,  0,  0,  0,  0,  0],
-        [50, 50, 50, 50, 50, 50, 50, 50],
-        [10, 10, 20, 30, 30, 20, 10, 10],
-        [ 5,  5, 10, 25, 25, 10,  5,  5],
-        [ 0,  0,  0, 20, 20,  0,  0,  0],
-        [ 5, -5,-10,  0,  0,-10, -5,  5],
-        [ 5, 10, 10,-20,-20, 10, 10,  5],
-        [ 0,  0,  0,  0,  0,  0,  0,  0]
-    ],
-    n: [
-        [-50,-40,-30,-30,-30,-30,-40,-50],
-        [-40,-20,  0,  0,  0,  0,-20,-40],
-        [-30,  0, 10, 15, 15, 10,  0,-30],
-        [-30,  5, 15, 20, 20, 15,  5,-30],
-        [-30,  0, 15, 20, 20, 15,  0,-30],
-        [-30,  5, 10, 15, 15, 10,  5,-30],
-        [-40,-20,  0,  5,  5,  0,-20,-40],
-        [-50,-40,-30,-30,-30,-30,-40,-50]
-    ],
-    b: [
-        [-20,-10,-10,-10,-10,-10,-10,-20],
-        [-10,  0,  0,  0,  0,  0,  0,-10],
-        [-10,  0,  5, 10, 10,  5,  0,-10],
-        [-10,  5,  5, 10, 10,  5,  5,-10],
-        [-10,  0, 10, 10, 10, 10,  0,-10],
-        [-10, 10, 10, 10, 10, 10, 10,-10],
-        [-10,  5,  0,  0,  0,  0,  5,-10],
-        [-20,-10,-10,-10,-10,-10,-10,-20]
-    ],
-    r: [
-        [  0,  0,  0,  0,  0,  0,  0,  0],
-        [  5, 10, 10, 10, 10, 10, 10,  5],
-        [ -5,  0,  0,  0,  0,  0,  0, -5],
-        [ -5,  0,  0,  0,  0,  0,  0, -5],
-        [ -5,  0,  0,  0,  0,  0,  0, -5],
-        [ -5,  0,  0,  0,  0,  0,  0, -5],
-        [ -5,  0,  0,  0,  0,  0,  0, -5],
-        [  0,  0,  0,  5,  5,  0,  0,  0]
-    ],
-    q: [
-        [-20,-10,-10, -5, -5,-10,-10,-20],
-        [-10,  0,  0,  0,  0,  0,  0,-10],
-        [-10,  0,  5,  5,  5,  5,  0,-10],
-        [ -5,  0,  5,  5,  5,  5,  0, -5],
-        [  0,  0,  5,  5,  5,  5,  0, -5],
-        [-10,  5,  5,  5,  5,  5,  0,-10],
-        [-10,  0,  5,  0,  0,  0,  0,-10],
-        [-20,-10,-10, -5, -5,-10,-10,-20]
-    ],
-    k: [
-        [-30,-40,-40,-50,-50,-40,-40,-30],
-        [-30,-40,-40,-50,-50,-40,-40,-30],
-        [-30,-40,-40,-50,-50,-40,-40,-30],
-        [-30,-40,-40,-50,-50,-40,-40,-30],
-        [-20,-30,-30,-40,-40,-30,-30,-20],
-        [-10,-20,-20,-20,-20,-20,-20,-10],
-        [ 20, 20,  0,  0,  0,  0, 20, 20],
-        [ 20, 30, 10,  0,  0, 10, 30, 20]
-    ]
-};
-
-function evaluateBoard() {
-    var totalEvaluation = 0;
-    var boardState = game.board();
-    for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-            var piece = boardState[i][j];
-            if (piece) {
-                var val = pieceWeights[piece.type];
-                var pstVal = 0;
-                
-                if (pst[piece.type]) {
-                    var row = piece.color === 'w' ? i : 7 - i;
-                    var col = j; 
-                    pstVal = pst[piece.type][row][col];
-                }
-                
-                var finalVal = val + pstVal;
-                totalEvaluation += (piece.color === 'w' ? finalVal : -finalVal);
-            }
-        }
-    }
-    return playerColor === 'white' ? -totalEvaluation : totalEvaluation;
+    // إرسال الوضع الحالي للمحرك
+    stockfish.postMessage('position fen ' + game.fen());
+    
+    // طلب الحساب بعمق 18 (هذا يضمن مستوى 3000+ ELO مع استجابة سريعة في المتصفح)
+    // يمكنك رفعه إلى 20 إذا أردت تفكيراً أعمق قليلاً (سيأخذ 2-4 ثواني)
+    stockfish.postMessage('go depth 18');
 }
 
 function onDragStart(source, piece, position, orientation) {
@@ -373,6 +250,8 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
+    board.position(game.fen(), false); // false هنا ضرورية لمنع الوميض عند السحب اليدوي
+
     if (targetPiece) playSound('capture');
     else playSound('move');
 
@@ -386,11 +265,6 @@ function onDrop(source, target) {
     if (game.turn() === aiTurnCheck && !game.game_over()) {
         makeAiMove();
     }
-}
-
-// دالة تفريغ المربع فور الانتهاء من الإفلات لمنع ظهور أي بقايا للقطعة السابقة
-function onSnapEnd() {
-    board.position(game.fen(), false);
 }
 
 function highlightCheckSquare() {
@@ -483,7 +357,7 @@ function checkGameOver() {
             if (game.turn() === playerColor[0]) {
                 msg = "لا تيأس إذا رجعت خطوة للوراء، فلا تنسَ أن السهم يحتاج أن ترجعه للوراء لينطلق بقوة إلى الأمام.";
             } else {
-                msg = "أحسنت، تغلبت على أيانوكوجي كيوتاكا.";
+                msg = "أحسنت، تغلبت على أيانوكوجي كيوتاكا."; // (ملاحظة: هزيمة Stockfish صعبة جداً!)
             }
         } else {
             msg = "لقد نجوت هذه المرة بأعجوبة (تعادل).";
@@ -494,6 +368,6 @@ function checkGameOver() {
 }
 
 function updateStatus(isThinking = false) {
-    var txt = isThinking ? "أيانوكوجي يحلل الموقف بعمق وبصمت..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
+    var txt = isThinking ? "أيانوكوجي يحلل الموقف بعمق خارق (Stockfish Engine)..." : (game.turn() === playerColor[0] ? "دورك الآن (قم بتحريك قطعتك)" : "دور أيانوكوجي...");
     $('#status').text(txt);
 }
