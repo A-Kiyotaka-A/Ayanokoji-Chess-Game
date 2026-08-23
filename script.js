@@ -73,7 +73,6 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
         var piece = game.get(square);
 
-        // 1. محاولة تنفيذ الحركة إذا كان هناك مربع محدد مسبقاً
         if (selectedSquare && selectedSquare !== square) {
             var moves = game.moves({ square: selectedSquare, verbose: true });
             var targetMatch = false;
@@ -93,7 +92,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
                 });
 
                 if (move !== null) {
-                    board.position(game.fen(), false);
+                    // إزالة false للسماح بالأنيميشن الطبيعي
+                    board.position(game.fen());
                     if (targetPiece) playSound('capture');
                     else playSound('move');
 
@@ -113,24 +113,19 @@ window.addEventListener('DOMContentLoaded', (event) => {
             }
         }
 
-        // 2. منطق التحديد الجديد: يبقى المسار ظاهراً حتى تنقر على قطعة أخرى
         if (piece && piece.color === playerColor[0]) {
             if (selectedSquare === square) {
-                // النقر على نفس القطعة يلغي التحديد
                 selectedSquare = null;
                 removeHighlights();
                 highlightCheckSquare();
             } else {
-                // النقر على قطعة جديدة (يُلغي القديم ويظهر الجديد)
                 selectedSquare = square;
                 removeHighlights();
                 highlightCheckSquare();
                 $('#board .square-' + square).addClass('highlight-selected');
                 showSquareHints(square, piece);
             }
-        } 
-        // ملاحظة: تم حذف جزء "else" الذي كان يمسح التحديد عند النقر على مربع فارغ، 
-        // لتحقيق طلبك بأن يبقى المسار ظاهراً حتى تنقر على قطعة أخرى.
+        }
     });
 });
 
@@ -151,9 +146,8 @@ function startGame(color) {
         position: 'start',
         orientation: playerColor,
         pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
-        // إصلاح جذري لمشكلة الوميض والقطعة المزدوجة: جعل الحركة فورية
-        snapbackSpeed: 0,
-        snapSpeed: 0,
+        snapbackSpeed: 50,
+        snapSpeed: 50,
         onDragStart: onDragStart,
         onDrop: onDrop,
         onMouseoverSquare: onMouseoverSquare,
@@ -182,7 +176,6 @@ function makeAiMove() {
     updateStatus(true);
 
     window.setTimeout(function() {
-        // العمق 3 مع جداول التقييم الجديدة يجعله ذكياً وسريعاً جداً
         var bestMove = calculateBestMove(3); 
         if (bestMove) {
             var isCapture = bestMove.captured;
@@ -191,7 +184,8 @@ function makeAiMove() {
 
             window.setTimeout(function() {
                 game.move(bestMove);
-                board.position(game.fen(), false); 
+                // إزالة false للسماح بالأنيميشن الطبيعي للروبوت
+                board.position(game.fen());
                 
                 if (isCapture) playSound('capture');
                 else playSound('move');
@@ -217,7 +211,6 @@ function calculateBestMove(depth) {
     var moves = game.moves({ verbose: true });
     if (moves.length === 0) return null;
 
-    // ترتيب الحركات: الأكل أولاً (يسرع عملية البحث بشكل هائل)
     moves.sort(function(a, b) {
         return (b.captured ? 100 : 0) - (a.captured ? 100 : 0);
     });
@@ -268,10 +261,6 @@ function minimax(depth, alpha, beta, isMaximizing) {
     }
 }
 
-// ==========================================
-// ترقية الذكاء الاصطناعي: جداول تقييم المواقع (Piece-Square Tables)
-// تجعل الروبوت يفهم "أين" يضع القطع (مثل السيطرة على المركز) دون إبطاء السرعة
-// ==========================================
 const pieceWeights = { p: 100, n: 320, b: 330, r: 500, q: 900, k: 20000 };
 
 const pst = {
@@ -347,9 +336,7 @@ function evaluateBoard() {
                 var val = pieceWeights[piece.type];
                 var pstVal = 0;
                 
-                // حساب قيمة الموقع بناءً على جدول القطعة
                 if (pst[piece.type]) {
-                    // عكس الصفوف للاعب الأسود ليتوافق التقييم مع جهته
                     var row = piece.color === 'w' ? i : 7 - i;
                     var col = j; 
                     pstVal = pst[piece.type][row][col];
@@ -381,7 +368,8 @@ function onDrop(source, target) {
 
     if (move === null) return 'snapback';
 
-    board.position(game.fen(), false);
+    // إزالة false للسماح بالأنيميشن الطبيعي عند الإفلات
+    board.position(game.fen());
 
     if (targetPiece) playSound('capture');
     else playSound('move');
@@ -443,7 +431,6 @@ function onMouseoverSquare(square, piece) {
 }
 
 function onMouseoutSquare(square, piece) {
-    // إذا كان هناك مربع محدد بالفعل، لا تقم بإزالة التلميحات عند خروج الماوس
     if (selectedSquare) return;
     removeHighlights();
     highlightCheckSquare();
