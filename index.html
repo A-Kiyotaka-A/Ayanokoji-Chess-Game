@@ -4,87 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شطرنج النخبة</title>
-    <link rel="icon" type="image/png" href="images/favicon.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
 
-    <button class="bottom-left-settings" onclick="openSettings()">إعدادات</button>
+    <button class="bottom-left-settings" onclick="openSettings()"></button>
 
     <div id="settingsModal" class="settings-modal">
         <div class="settings-content">
-            <h2>إعدادات النظام</h2>
-            <div class="setting-item">
-                <label>فتح جميع المستويات:</label>
-                <button class="setting-btn" onclick="toggleAllLevels()">تفعيل</button>
-            </div>
-            <button class="close-settings" onclick="closeSettings()">إغلاق</button>
+            <h2 style="color:var(--neon-yellow); margin-top:0;">إعدادات النظام</h2>
+            <button style="background:var(--neon-red); color:#fff; border:none; padding:8px 20px; border-radius:6px; cursor:pointer;" onclick="closeSettings()">إغلاق</button>
         </div>
     </div>
 
     <div class="levels-container">
         
         <div class="logo-box">
-            <img src="images/logo.jfif" alt="Logo" class="logo-img" onerror="this.src='images/logo.jpg'">
+            <img src="images/logo.jfif" alt="Logo" class="logo-img">
         </div>
 
         <p class="subtitle">اختر خصمك واصعد في هرم القوة حتى تصل إلى القمة المطلقة</p>
 
         <div class="levels-grid">
-            <div class="level-card" onclick="selectLevel(1)">
-                <div class="avatar-box"><img src="images/1.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 100</span>
-                <h3>هونامي إيتشينوسي</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(2)">
-                <div class="avatar-box"><img src="images/2.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 300</span>
-                <h3>سوزوني هوريكيتا</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(3)">
-                <div class="avatar-box"><img src="images/3.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 600</span>
-                <h3>كاكيرو ريون</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(4)">
-                <div class="avatar-box"><img src="images/4.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 1000</span>
-                <h3>ميابي ناجومو</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(5)">
-                <div class="avatar-box"><img src="images/5.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 1400</span>
-                <h3>كوهي كاتسوراغي</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(6)">
-                <div class="avatar-box"><img src="images/6.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 1800</span>
-                <h3>مانابو هوريكيتا</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(7)">
-                <div class="avatar-box"><img src="images/7.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 2200</span>
-                <h3>إيكا أماساوا</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(8)">
-                <div class="avatar-box"><img src="images/8.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 2600</span>
-                <h3>تاكويا ياغامي</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(9)">
-                <div class="avatar-box"><img src="images/9.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 2900</span>
-                <h3>روين كوانجي</h3>
-            </div>
-            <div class="level-card" onclick="selectLevel(10)">
-                <div class="avatar-box"><img src="images/10.jpg" alt="" class="char-avatar"></div>
-                <span class="level-num">Lv. 3200</span>
-                <h3>أريسو ساكاياناغي</h3>
-            </div>
+            <div class="level-card" onclick="selectLevel(1)"><div class="avatar-box"><img src="images/1.jpg" class="char-avatar"></div><span class="level-num">Lv. 100</span><h3>هونامي إيتشينوسي</h3></div>
+            <div class="level-card" onclick="selectLevel(2)"><div class="avatar-box"><img src="images/2.jpg" class="char-avatar"></div><span class="level-num">Lv. 300</span><h3>سوزوني هوريكيتا</h3></div>
+            <div class="level-card" onclick="selectLevel(3)"><div class="avatar-box"><img src="images/3.jpg" class="char-avatar"></div><span class="level-num">Lv. 600</span><h3>كاكيرو ريون</h3></div>
+            <div class="level-card" onclick="selectLevel(4)"><div class="avatar-box"><img src="images/4.jpg" class="char-avatar"></div><span class="level-num">Lv. 1000</span><h3>ميابي ناجومو</h3></div>
+            <div class="level-card" onclick="selectLevel(5)"><div class="avatar-box"><img src="images/5.jpg" class="char-avatar"></div><span class="level-num">Lv. 1400</span><h3>كوهي كاتسوراغي</h3></div>
+            <div class="level-card" onclick="selectLevel(6)"><div class="avatar-box"><img src="images/6.jpg" class="char-avatar"></div><span class="level-num">Lv. 1800</span><h3>مانابو هوريكيتا</h3></div>
+            <div class="level-card" onclick="selectLevel(7)"><div class="avatar-box"><img src="images/7.jpg" class="char-avatar"></div><span class="level-num">Lv. 2200</span><h3>إيكا أماساوا</h3></div>
+            <div class="level-card" onclick="selectLevel(8)"><div class="avatar-box"><img src="images/8.jpg" class="char-avatar"></div><span class="level-num">Lv. 2600</span><h3>تاكويا ياغامي</h3></div>
+            <div class="level-card" onclick="selectLevel(9)"><div class="avatar-box"><img src="images/9.jpg" class="char-avatar"></div><span class="level-num">Lv. 2900</span><h3>روين كوانجي</h3></div>
+            <div class="level-card" onclick="selectLevel(10)"><div class="avatar-box"><img src="images/10.jpg" class="char-avatar"></div><span class="level-num">Lv. 3200</span><h3>أريسو ساكاياناغي</h3></div>
         </div>
 
         <div class="level-card boss-card" onclick="selectLevel(11)">
-            <div class="avatar-box boss-avatar-box"><img src="images/ayanokoji.png" alt="" class="char-avatar"></div>
+            <div class="avatar-box boss-avatar-box"><img src="images/ayanokoji.png" class="char-avatar"></div>
             <span class="level-num boss-num">Lv. ????</span>
             <h3>كيوتكا أيانوكوجي</h3>
             <p class="boss-quote">"في هذا العالم، الفوز هو كل شيء."</p>
@@ -92,28 +47,6 @@
 
     </div>
 
-    <script>
-        window.addEventListener('DOMContentLoaded', (event) => {
-            var randomBg = Math.floor(Math.random() * 3) + 1;
-            document.body.style.backgroundImage = `linear-gradient(rgba(7, 9, 14, 0.85), rgba(7, 9, 14, 0.85)), url('images/${randomBg}.jfif')`;
-        });
-
-        function selectLevel(lvl) {
-            window.location.href = `game.html?level=${lvl}`;
-        }
-
-        function openSettings() {
-            document.getElementById('settingsModal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
-
-        function toggleAllLevels() {
-            alert("تم فتح جميع المستويات.");
-            closeSettings();
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
