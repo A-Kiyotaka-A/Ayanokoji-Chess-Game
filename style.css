@@ -1,297 +1,180 @@
 :root {
-    --ayanokoji-dark: #1e130c;
-    --ayanokoji-panel: rgba(35, 25, 18, 0.95); 
-    --ayanokoji-brown: #6b4425;
-    --ayanokoji-gold: #f3c653;
-    --ayanokoji-gold-glow: rgba(243, 198, 83, 0.6);
+    --bg-dark: #0f0a07;
+    --panel-bg: rgba(25, 18, 14, 0.85);
+    --neon-gold: #f3c653;
+    --neon-cyan: #00f3ff;
+    --neon-red: #ff2a6d;
     --text-color: #f8f5ef;
+    --board-border: rgba(243, 198, 83, 0.3);
 }
 
 body.dark-theme {
     color: var(--text-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0; padding: 0;
+    height: 100vh; width: 100vw;
+    display: flex; justify-content: center; align-items: center;
     overflow: hidden;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background: radial-gradient(circle at center, #1a120b 0%, #000000 100%);
 }
 
 .main-container {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-    z-index: 10;
+    display: flex; flex-direction: row; align-items: center; justify-content: center;
+    gap: 40px; z-index: 10;
 }
 
-.left-side-panel {
-    display: flex;
-    flex-direction: column;
-    width: 280px;
+/* --- تصميم البطاقة والبروفايل --- */
+.opponent-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--board-border);
+    border-radius: 20px; padding: 25px 20px;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    box-shadow: 0 0 30px rgba(243, 198, 83, 0.1), inset 0 0 20px rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px); width: 260px;
 }
 
-.right-game-area {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
+.avatar-container {
+    width: 110px; height: 110px; border-radius: 50%; overflow: hidden;
+    border: 2px solid var(--neon-gold);
+    box-shadow: 0 0 20px var(--neon-gold); margin-bottom: 15px;
 }
+.avatar { width: 100%; height: 100%; object-fit: cover; }
 
+.opponent-card h3 { color: #fff; font-size: 1.4rem; margin: 5px 0; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+.quote-text { font-size: 0.8rem; color: var(--neon-cyan); font-style: italic; margin-top: 10px; line-height: 1.5; }
+
+.captured-section { margin-top: 25px; width: 100%; }
+.captured-label { font-size: 0.8rem; color: var(--neon-gold); font-weight: bold; display: block; margin-bottom: 8px; }
+.captured-pieces { font-size: 1.5rem; min-height: 40px; letter-spacing: 4px; color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
+
+/* --- رقعة الشطرنج والتغليف --- */
 .board-wrapper {
-    background: var(--ayanokoji-panel);
-    padding: 12px;
-    border-radius: 18px;
-    border: 2px solid var(--ayanokoji-gold-glow);
-    box-shadow: 0 0 35px rgba(25, 15, 8, 0.9);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    background: var(--panel-bg); padding: 15px; border-radius: 16px;
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 0 0 40px rgba(0, 243, 255, 0.15), inset 0 0 30px rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center;
 }
 
 #board {
-    width: 400px !important; 
-    border-radius: 10px;
-    overflow: visible !important; /* مهم جداً: يمنع قص القطعة عند حواف الرقعة أثناء السحب */
+    width: 420px !important; 
+    border-radius: 8px;
+    overflow: visible !important;
 }
 
-.game-controls {
-    margin-top: 8px;
-    text-align: center;
+/* 🔥 إصلاح جذري لتكدس القطع: إخفاء أي قطعة مكررة أو مخفية بشكل خاطئ */
+#board .square-55d63 img.piece-417db {
+    display: block !important;
+    z-index: 100 !important;
+    pointer-events: none !important;
+}
+#board .square-55d63 img.piece-417db:not(:last-child) {
+    display: none !important;
+}
+.ui-draggable-dragging {
+    z-index: 9999 !important;
+    opacity: 0.9 !important;
+    cursor: grabbing !important;
 }
 
-#status {
-    font-size: 0.95rem;
-    color: var(--ayanokoji-gold);
-    font-weight: bold;
-}
+.game-controls { margin-top: 12px; text-align: center; }
+.status-text { font-size: 1rem; color: var(--neon-cyan); font-weight: bold; letter-spacing: 1px; }
 
+/* --- شريط الأدوات والأزرار --- */
 .tools-bar {
-    background: var(--ayanokoji-panel);
-    border: 2px solid var(--ayanokoji-brown);
-    border-radius: 12px;
-    padding: 8px;
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    box-sizing: border-box;
-    justify-content: space-between;
-}
-
-.opponent-card {
-    background: var(--ayanokoji-panel);
-    border: 2px solid var(--ayanokoji-brown);
-    border-radius: 18px;
-    padding: 20px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    box-shadow: 0 0 30px rgba(107, 68, 37, 0.5);
+    background: var(--panel-bg); border: 1px solid var(--board-border);
+    border-radius: 12px; padding: 10px; display: flex; gap: 10px;
+    width: 100%; box-sizing: border-box; justify-content: center;
     backdrop-filter: blur(10px);
 }
 
-.opponent-card .avatar-container {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--ayanokoji-gold);
-    box-shadow: 0 0 20px var(--ayanokoji-gold-glow);
-    margin-bottom: 12px;
-}
-
-.opponent-card .avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.opponent-card h3 {
-    color: #fff;
-    font-size: 1.3rem;
-    margin: 8px 0;
-}
-
-.quote-text {
-    font-size: 0.85rem;
-    color: var(--ayanokoji-gold);
-    font-style: italic;
-    margin-top: 10px;
-    line-height: 1.4;
-}
-
 .action-btn, .setting-btn {
-    background: linear-gradient(135deg, #322218, #1c130d);
-    color: var(--ayanokoji-gold);
-    border: 1px solid var(--ayanokoji-brown);
-    padding: 7px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.75rem;
-    flex: 1;
-    text-align: center;
+    background: rgba(255, 255, 255, 0.05); color: var(--text-color);
+    border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 15px;
+    border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8rem;
+    transition: all 0.3s ease;
 }
-
 .action-btn:hover, .setting-btn:hover {
-    background: var(--ayanokoji-brown);
-    color: #fff;
+    background: rgba(255, 255, 255, 0.15); border-color: var(--neon-cyan);
+    color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
 }
-
+.setting-btn.active-hint {
+    background: rgba(0, 243, 255, 0.15); border-color: var(--neon-cyan); color: var(--neon-cyan);
+}
 .legendary-btn {
-    background: linear-gradient(135deg, #8a4e22, var(--ayanokoji-brown));
-    color: white;
-    border: 1px solid var(--ayanokoji-gold);
+    background: linear-gradient(135deg, rgba(243, 198, 83, 0.2), rgba(243, 198, 83, 0.05));
+    color: var(--neon-gold); border: 1px solid var(--neon-gold);
+}
+.legendary-btn:hover {
+    background: var(--neon-gold); color: #000; box-shadow: 0 0 20px var(--neon-gold);
 }
 
-.captured-pieces {
-    font-size: 1.3rem;
-    min-height: 35px;
-    margin-top: 8px;
-    letter-spacing: 3px;
-    color: var(--ayanokoji-gold);
-}
-
+/* --- الشاشات المنبثقة --- */
 .start-screen, .game-over-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 10, 7, 0.96);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9); display: flex; justify-content: center;
+    align-items: center; z-index: 9999; backdrop-filter: blur(5px);
 }
-
 .start-box, .modal-box {
-    background: var(--ayanokoji-dark);
-    border: 2px solid var(--ayanokoji-brown);
-    padding: 35px;
-    border-radius: 18px;
-    text-align: center;
-    box-shadow: 0 0 50px rgba(107, 68, 37, 0.7);
-    width: 380px;
+    background: var(--panel-bg); border: 1px solid var(--neon-gold);
+    padding: 40px; border-radius: 20px; text-align: center;
+    box-shadow: 0 0 60px rgba(243, 198, 83, 0.2); width: 350px;
 }
+.neon-text { color: var(--neon-gold); text-shadow: 0 0 15px var(--neon-gold); margin-bottom: 10px; }
+.neon-text-small { color: var(--neon-gold); font-size: 0.9rem; margin-bottom: 15px; }
+.subtitle { color: #aaa; margin-bottom: 30px; }
+.modal-text { margin: 20px 0; font-size: 1.1rem; line-height: 1.6; color: #fff; }
 
 .play-trigger-btn {
-    width: 85px;
-    height: 85px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--ayanokoji-brown), var(--ayanokoji-gold));
-    border: none;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 0 auto;
-    box-shadow: 0 0 20px var(--ayanokoji-gold-glow);
-    transition: 0.3s;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: radial-gradient(circle, var(--neon-gold), #8a4e22);
+    border: none; cursor: pointer; margin: 0 auto;
+    box-shadow: 0 0 30px var(--neon-gold); transition: transform 0.3s, box-shadow 0.3s;
 }
-
-.play-trigger-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 35px var(--ayanokoji-gold);
-}
-
+.play-trigger-btn:hover { transform: scale(1.1); box-shadow: 0 0 50px var(--neon-gold); }
 .play-triangle {
-    width: 0;
-    height: 0;
-    border-top: 12px solid transparent;
-    border-bottom: 12px solid transparent;
-    border-left: 20px solid var(--ayanokoji-dark);
-    margin-left: 3px;
+    width: 0; height: 0;
+    border-top: 12px solid transparent; border-bottom: 12px solid transparent;
+    border-left: 20px solid #0f0a07; margin-left: 4px;
 }
 
-.color-selection {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
+.color-selection { display: flex; flex-direction: column; gap: 12px; }
 .color-btn {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--ayanokoji-gold);
-    background: #2b1e16;
-    color: #fff;
-    cursor: pointer;
-    font-weight: bold;
+    padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; font-weight: bold;
+    transition: all 0.3s;
 }
+.white-btn:hover { background: #fff; color: #000; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+.black-btn:hover { background: #000; color: #fff; border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.3); }
 
-.color-btn:hover {
-    background: var(--ayanokoji-gold);
-    color: var(--ayanokoji-dark);
-}
-
+/* --- تلميحات الحركة (Hints) --- */
 .move-dot {
-    width: 16px;
-    height: 16px;
-    background-color: rgba(46, 204, 113, 0.85);
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+    width: 18px; height: 18px;
+    background-color: rgba(0, 243, 255, 0.6);
+    border-radius: 50%; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); pointer-events: none; z-index: 5;
+    box-shadow: 0 0 8px var(--neon-cyan);
 }
-
 .kill-cross {
-    font-size: 20px;
-    font-weight: bold;
-    color: #e74c3c;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+    font-size: 24px; font-weight: 900; color: var(--neon-red);
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); pointer-events: none; z-index: 5;
+    text-shadow: 0 0 10px var(--neon-red);
 }
-
-.castling-arrows {
-    font-size: 12px;
-    font-weight: bold;
-    color: #3498db;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    text-align: center;
-}
-
 .check-square {
-    background-color: rgba(231, 76, 60, 0.85) !important;
-    box-shadow: inset 0 0 12px #c0392b;
+    background: radial-gradient(circle, rgba(255, 42, 109, 0.6) 0%, rgba(255, 42, 109, 0.2) 100%) !important;
+    box-shadow: inset 0 0 15px var(--neon-red);
+}
+.highlight-selected {
+    background: rgba(243, 198, 83, 0.3) !important;
+    box-shadow: inset 0 0 10px var(--neon-gold);
 }
 
-/* ==========================================
-   إصلاح جذري لمشكلة اختفاء القطعة أثناء السحب
-   ========================================== */
-.piece-417db, 
-.ui-draggable-dragging {
-    z-index: 10000 !important; /* أعلى من كل العناصر لضمان ظهورها فوق النوافذ والتلميحات */
-    opacity: 1 !important;
-    display: block !important;
-    visibility: visible !important;
-    cursor: grabbing !important;
-    /* تم إزالة pointer-events: none لأنها كانت تسبب فقدان تتبع الماوس للقطعة */
-}
-
-.move-dot, .kill-cross, .castling-arrows {
-    pointer-events: none !important;
-    z-index: 1 !important; /* لضمان بقائها تحت القطعة المسحوبة */
-}
-/* إخفاء فوري لأي قطعة مكررة داخل نفس المربع */
-.square-55d63 img.piece-417db:not(:last-child) {
-    display: none !important;
+/* تجاوب مع الشاشات الصغيرة */
+@media (max-width: 850px) {
+    .main-container { flex-direction: column; gap: 20px; }
+    .left-side-panel { width: 100%; max-width: 420px; flex-direction: row; justify-content: space-around; padding: 10px; }
+    .opponent-card { width: 100%; flex-direction: row; text-align: right; padding: 15px; }
+    .avatar-container { width: 60px; height: 60px; margin-bottom: 0; margin-left: 15px; }
+    .quote-text { display: none; }
+    #board { width: 90vw !important; max-width: 420px; }
 }
