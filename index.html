@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شطرنج Ayanokoji - النسخة النهائية</title>
+    <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
+    <link rel="icon" href="images/favicon.png" type="image/png">
+    
+    <!-- مكتبة Chessboard.js CSS -->
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <!-- ملف التنسيقات الخاص بك -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
 
-    <!-- شاشة البداية (تغطي كل شيء) -->
+    <!-- شاشة البداية -->
     <div id="startScreen" class="start-screen">
         <div class="start-box">
             <h2 class="neon-text">شطرنج كيوتاكا أيانوكوجي</h2>
-            <p class="subtitle">الفوز هو كل شيء.. طالما أنني أفوز في النهاية.</p>
+            <p class="subtitle">استعد للمواجهة الاستراتيجية الكبرى</p>
             <button class="play-trigger-btn" onclick="showColorSelection()">
                 <div class="play-triangle"></div>
             </button>
-            <div id="colorSelectionBox" class="color-selection" style="display: none;">
+            <div id="colorSelectionBox" class="color-selection" style="display: none; margin-top: 20px;">
                 <p class="neon-text-small">اختر لون القطع:</p>
-                <button class="color-btn white-btn" onclick="startGame('white')">الأبيض</button>
-                <button class="color-btn black-btn" onclick="startGame('black')">الأسود</button>
+                <button class="color-btn white-btn" onclick="startGame('white')">[ الأبيض ]</button>
+                <button class="color-btn black-btn" onclick="startGame('black')">[ الأسود ]</button>
             </div>
         </div>
     </div>
@@ -28,20 +32,21 @@
     <!-- نافذة نهاية اللعبة -->
     <div id="gameOverModal" class="game-over-modal" style="display: none;">
         <div class="modal-box">
-            <h2 class="neon-text">انتهت اللعبة</h2>
+            <h2 class="neon-text" id="winnerTitle">انتهت اللعبة</h2>
             <p id="winnerText" class="modal-text"></p>
-            <button class="action-btn legendary-btn" onclick="resetToMenu()">العودة للقائمة</button>
+            <button class="action-btn legendary-btn" onclick="resetToMenu()">العودة للقائمة الرئيسية</button>
         </div>
     </div>
 
-    <!-- واجهة اللعب -->
+    <!-- الحاوية الرئيسية -->
     <div class="main-container">
         <div class="left-side-panel">
             <div class="opponent-card">
                 <div class="avatar-container">
-                    <img src="https://ui-avatars.com/api/?name=Ayanokoji&background=1e130c&color=f3c653&size=128" alt="Ayanokoji" class="avatar">
+                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=Ayanokoji&background=1e130c&color=f3c653&size=128'">
                 </div>
                 <h3>أيانوكوجي كيوتاكا</h3>
+                <span class="quote-text">"الفوز هو كل شيء.. طالما أنني أفوز في النهاية."</span>
                 <div class="captured-section">
                     <span class="captured-label">القطع المأخوذة</span>
                     <div id="opponentCaptured" class="captured-pieces"></div>
@@ -53,16 +58,19 @@
             <div class="board-wrapper">
                 <div id="board"></div>
                 <div class="game-controls">
-                    <span id="status" class="status-text">جاهز للبدء</span>
+                    <span id="status" class="status-text">الحالة: جاهز</span>
                 </div>
             </div>
+
             <div class="tools-bar">
-                <button id="hintsToggle" class="setting-btn active-hint">إظهار الحركات</button>
-                <button class="action-btn legendary-btn" onclick="resetToMenu()">خروج</button>
+                <button id="fullscreenToggle" class="setting-btn">[ ] ملء الشاشة</button>
+                <button id="hintsToggle" class="setting-btn active-hint">[#] الحركات</button>
+                <button class="action-btn legendary-btn" onclick="resetToMenu()">[↺] القائمة الرئيسية</button>
             </div>
         </div>
     </div>
 
+    <!-- المكتبات بالترتيب الصحيح -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
