@@ -4,14 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شطرنج Ayanokoji - النسخة الأسطورية</title>
+    <link rel="icon" href="images/favicon.png" type="image/png">
     
-    <!-- تصحيح اسم الأيقونة وإضافة ?v=2 لكسر الذاكرة المؤقتة للمتصفح -->
-    <link rel="icon" href="favicon.png?v=2" type="image/png">
-    <!-- إضافة دعم لأجهزة آبل (آيفون وآيباد) -->
-    <link rel="apple-touch-icon" href="favicon.png?v=2">
-    
-    <!-- مكتبة Chessboard.js CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <!-- ملف CSS المحلي الخاص بـ Chessboard -->
+    <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
     <!-- ملف التنسيقات الخاص بك -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -20,15 +16,15 @@
     <!-- شاشة البداية -->
     <div id="startScreen" class="start-screen">
         <div class="start-box">
-            <h2 style="color: var(--ayanokoji-gold); text-shadow: 0 0 15px var(--ayanokoji-gold);">شطرنج كيوتاكا أيانوكوجي</h2>
-            <p style="color: #d1c7bd; margin-bottom: 25px;">استعد للمواجهة الاستراتيجية الكبرى</p>
+            <h2 class="neon-text">شطرنج كيوتاكا أيانوكوجي</h2>
+            <p class="subtitle">استعد للمواجهة الاستراتيجية الكبرى</p>
             <button class="play-trigger-btn" onclick="showColorSelection()">
                 <div class="play-triangle"></div>
             </button>
             <div id="colorSelectionBox" class="color-selection" style="display: none; margin-top: 20px;">
-                <p style="color: var(--ayanokoji-gold); font-size: 0.9rem; margin-bottom: 10px;">اختر لون القطع:</p>
-                <button class="color-btn" onclick="startGame('white')">[ الأبيض ]</button>
-                <button class="color-btn" onclick="startGame('black')">[ الأسود ]</button>
+                <p class="neon-text-small">اختر لون القطع:</p>
+                <button class="color-btn white-btn" onclick="startGame('white')">[ الأبيض ]</button>
+                <button class="color-btn black-btn" onclick="startGame('black')">[ الأسود ]</button>
             </div>
         </div>
     </div>
@@ -36,54 +32,53 @@
     <!-- نافذة نهاية اللعبة -->
     <div id="gameOverModal" class="game-over-modal" style="display: none;">
         <div class="modal-box">
-            <h2 id="winnerTitle" style="color: var(--ayanokoji-gold);">انتهت اللعبة</h2>
-            <p id="winnerText" style="margin: 20px 0; font-size: 1.1rem; line-height: 1.6;"></p>
-            <button class="action-btn legendary-btn" onclick="resetToMenu()" style="width: 100%; padding: 12px;">القائمة الرئيسية واختيار اللون</button>
+            <h2 class="neon-text" id="winnerTitle">انتهت اللعبة</h2>
+            <p id="winnerText" class="modal-text"></p>
+            <button class="action-btn legendary-btn" onclick="resetToMenu()">العودة للقائمة الرئيسية</button>
         </div>
     </div>
 
     <!-- الحاوية الرئيسية -->
     <div class="main-container">
-
         <!-- القسم الأيسر: بروفايل أيانوكوجي -->
         <div class="left-side-panel">
             <div class="opponent-card">
                 <div class="avatar-container">
-                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar">
+                    <img src="images/ayanokoji.png" alt="Ayanokoji" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=Ayanokoji&background=1e130c&color=f3c653&size=128'">
                 </div>
                 <h3>أيانوكوجي كيوتاكا</h3>
-                <span class="quote-text">"في هذا العالم، الفوز هو كل شيء.. طالما أنني أفوُز في النهاية.. هذا كل ما يهم."</span>
-                <div style="margin-top: 20px; width: 100%;">
-                    <span style="font-size: 0.85rem; color: #e2b13c; font-weight: bold;">القطع المأخوذة</span>
+                <span class="quote-text">"الفوز هو كل شيء.. طالما أنني أفوز في النهاية."</span>
+                <div class="captured-section">
+                    <span class="captured-label">القطع المأخوذة</span>
                     <div id="opponentCaptured" class="captured-pieces"></div>
                 </div>
             </div>
         </div>
 
-        <!-- القسم الأيمن: رقعة الشطرنج وشريط الأدوات -->
+        <!-- القسم الأيمن: رقعة الشطرنج -->
         <div class="right-game-area">
             <div class="board-wrapper">
                 <div id="board"></div>
                 <div class="game-controls">
-                    <span id="status">الحالة: جاهز</span>
+                    <span id="status" class="status-text">الحالة: جاهز</span>
                 </div>
             </div>
 
-            <!-- شريط الأدوات العرضي تحت الرقعة -->
+            <!-- شريط الأدوات -->
             <div class="tools-bar">
                 <button id="fullscreenToggle" class="setting-btn">[ ] ملء الشاشة</button>
-                <button id="hintsToggle" class="setting-btn">[#] الحركات</button>
-                <button class="action-btn legendary-btn" onclick="resetToMenu()">[↺] القائمة الرئيسية</button>
+                <button id="hintsToggle" class="setting-btn active-hint">[#] الحركات</button>
+                <button class="action-btn legendary-btn" onclick="resetToMenu()">[↺] إعادة</button>
             </div>
         </div>
-
     </div>
 
-    <!-- المكتبات بالترتيب الصحيح (مهم جداً لعمل السحب والإفلات) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- المكتبات بالترتيب الصحيح (مهم جداً) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-    <!-- ملف الجافاسكربت الخاص بك -->
+    <!-- ملف JS المحلي الخاص بـ Chessboard -->
+    <script src="js/chessboard-1.0.0.min.js"></script>
+    <!-- ملف الجافاسكربت الخاص باللعبة -->
     <script src="script.js"></script>
 </body>
 </html>
