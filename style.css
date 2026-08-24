@@ -1,7 +1,9 @@
 :root {
-    --bg-dark: #0a0705;
-    --panel-bg: rgba(20, 15, 10, 0.9);
-    --neon-gold: #f3c653;
+    --ayanokoji-dark: #1e130c;
+    --ayanokoji-panel: rgba(35, 25, 18, 0.95); 
+    --ayanokoji-brown: #6b4425;
+    --ayanokoji-gold: #f3c653;
+    --ayanokoji-gold-glow: rgba(243, 198, 83, 0.6);
     --neon-cyan: #00f3ff;
     --neon-red: #ff2a6d;
     --text-color: #f8f5ef;
@@ -14,8 +16,29 @@ body.dark-theme {
     height: 100vh; width: 100vw;
     display: flex; justify-content: center; align-items: center;
     overflow: hidden;
-    /* خلفية نيون داكنة مضمونة 100% بدون صور خارجية */
-    background: radial-gradient(circle at 50% 50%, #1a120b 0%, #000000 100%);
+    /* الخلفية سيتم تعيينها برمجياً من الملفات 1.jfif, 2.jfif, 3.jfif */
+    background-color: #0f0a07; 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* 🔥 إخفاء القطعة الوهمية (wP) التي تنشئها المكتبة خارج الرقعة */
+body > img.piece-417db, 
+img.piece-417db[style*="display:none"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* 🔥 إصلاح جذري لتكدس القطع: إخفاء أي قطعة مكررة داخل نفس المربع */
+#board .square-55d63 img.piece-417db:not(:last-child) {
+    display: none !important;
+}
+
+.ui-draggable-dragging {
+    z-index: 10000 !important;
+    opacity: 1 !important;
+    cursor: grabbing !important;
 }
 
 .main-container {
@@ -23,108 +46,118 @@ body.dark-theme {
     gap: 30px; z-index: 10;
 }
 
-/* --- البروفايل --- */
-.opponent-card {
-    background: var(--panel-bg); border: 1px solid rgba(243, 198, 83, 0.3);
-    border-radius: 16px; padding: 20px; display: flex; flex-direction: column;
-    align-items: center; text-align: center; width: 240px;
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
-}
-.avatar-container {
-    width: 100px; height: 100px; border-radius: 50%; overflow: hidden;
-    border: 2px solid var(--neon-gold); box-shadow: 0 0 15px var(--neon-gold); margin-bottom: 10px;
-}
-.avatar { width: 100%; height: 100%; object-fit: cover; }
-.opponent-card h3 { color: #fff; font-size: 1.2rem; margin: 5px 0; }
-.captured-section { margin-top: 20px; width: 100%; }
-.captured-label { font-size: 0.8rem; color: var(--neon-gold); font-weight: bold; display: block; margin-bottom: 5px; }
-.captured-pieces { font-size: 1.4rem; min-height: 35px; letter-spacing: 3px; color: var(--neon-red); }
+.left-side-panel { display: flex; flex-direction: column; width: 280px; }
+.right-game-area { display: flex; flex-direction: column; gap: 10px; align-items: center; }
 
-/* --- الرقعة --- */
 .board-wrapper {
-    background: var(--panel-bg); padding: 12px; border-radius: 12px;
-    border: 1px solid var(--neon-cyan);
-    box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+    background: var(--ayanokoji-panel); padding: 12px; border-radius: 18px;
+    border: 2px solid var(--ayanokoji-gold-glow);
+    box-shadow: 0 0 35px rgba(25, 15, 8, 0.9);
     display: flex; flex-direction: column; align-items: center;
 }
-#board { width: 400px !important; border-radius: 4px; }
 
-/* إصلاح جذري لمنع تكرار القطع */
-#board .square-55d63 img.piece-417db { display: block !important; z-index: 10 !important; }
-#board .square-55d63 img.piece-417db:not(:last-child) { display: none !important; }
-.ui-draggable-dragging { z-index: 9999 !important; opacity: 0.9 !important; cursor: grabbing !important; }
-
-.game-controls { margin-top: 10px; text-align: center; }
-.status-text { font-size: 1rem; color: var(--neon-cyan); font-weight: bold; }
-
-/* --- الأزرار --- */
-.tools-bar { background: var(--panel-bg); border-radius: 8px; padding: 8px; display: flex; gap: 10px; margin-top: 10px; }
-.action-btn, .setting-btn {
-    background: rgba(255, 255, 255, 0.05); color: var(--text-color);
-    border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 15px;
-    border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem; transition: 0.3s;
+#board {
+    width: 400px !important; 
+    border-radius: 10px;
+    overflow: visible !important;
 }
-.action-btn:hover, .setting-btn:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.setting-btn.active-hint { background: rgba(0, 243, 255, 0.15); border-color: var(--neon-cyan); color: var(--neon-cyan); }
-.legendary-btn { background: linear-gradient(135deg, rgba(243, 198, 83, 0.2), rgba(243, 198, 83, 0.05)); color: var(--neon-gold); border: 1px solid var(--neon-gold); }
-.legendary-btn:hover { background: var(--neon-gold); color: #000; }
 
-/* --- الشاشات المنبثقة --- */
+.game-controls { margin-top: 8px; text-align: center; }
+#status { font-size: 0.95rem; color: var(--neon-cyan); font-weight: bold; text-shadow: 0 0 5px var(--neon-cyan); }
+
+.tools-bar {
+    background: var(--ayanokoji-panel); border: 2px solid var(--ayanokoji-brown);
+    border-radius: 12px; padding: 8px; display: flex; gap: 8px;
+    width: 100%; box-sizing: border-box; justify-content: space-between;
+}
+
+.opponent-card {
+    background: var(--ayanokoji-panel); border: 2px solid var(--ayanokoji-brown);
+    border-radius: 18px; padding: 20px 15px; display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    box-shadow: 0 0 30px rgba(107, 68, 37, 0.5); backdrop-filter: blur(10px);
+}
+
+.opponent-card .avatar-container {
+    width: 120px; height: 120px; border-radius: 50%; overflow: hidden;
+    border: 3px solid var(--ayanokoji-gold); box-shadow: 0 0 20px var(--ayanokoji-gold-glow); margin-bottom: 12px;
+}
+.opponent-card .avatar { width: 100%; height: 100%; object-fit: cover; }
+.opponent-card h3 { color: #fff; font-size: 1.3rem; margin: 8px 0; }
+.quote-text { font-size: 0.85rem; color: var(--ayanokoji-gold); font-style: italic; margin-top: 10px; line-height: 1.4; }
+
+.captured-section { margin-top: 20px; width: 100%; }
+.captured-label { font-size: 0.85rem; color: var(--ayanokoji-gold); font-weight: bold; display: block; margin-bottom: 8px; }
+.captured-pieces { font-size: 1.3rem; min-height: 35px; letter-spacing: 3px; color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
+
+.action-btn, .setting-btn {
+    background: linear-gradient(135deg, #322218, #1c130d); color: var(--ayanokoji-gold);
+    border: 1px solid var(--ayanokoji-brown); padding: 7px 10px; border-radius: 6px;
+    cursor: pointer; font-weight: bold; font-size: 0.75rem; flex: 1; text-align: center;
+}
+.action-btn:hover, .setting-btn:hover { background: var(--ayanokoji-brown); color: #fff; }
+.setting-btn.active-hint { background: rgba(0, 243, 255, 0.2); border-color: var(--neon-cyan); color: var(--neon-cyan); }
+.legendary-btn { background: linear-gradient(135deg, #8a4e22, var(--ayanokoji-brown)); color: white; border: 1px solid var(--ayanokoji-gold); }
+
 .start-screen, .game-over-modal {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.95); display: flex; justify-content: center;
-    align-items: center; z-index: 9999;
+    background: rgba(15, 10, 7, 0.96); display: flex; justify-content: center;
+    align-items: center; z-index: 9999; backdrop-filter: blur(5px);
 }
 .start-box, .modal-box {
-    background: var(--panel-bg); border: 1px solid var(--neon-gold);
-    padding: 40px; border-radius: 16px; text-align: center; width: 320px;
-    box-shadow: 0 0 50px rgba(243, 198, 83, 0.15);
+    background: var(--ayanokoji-dark); border: 2px solid var(--ayanokoji-brown);
+    padding: 35px; border-radius: 18px; text-align: center;
+    box-shadow: 0 0 50px rgba(107, 68, 37, 0.7); width: 380px;
 }
-.neon-text { color: var(--neon-gold); text-shadow: 0 0 10px var(--neon-gold); margin-bottom: 10px; }
-.neon-text-small { color: var(--neon-gold); font-size: 0.9rem; margin-bottom: 15px; }
-.subtitle { color: #aaa; margin-bottom: 30px; font-size: 0.95rem; }
-.modal-text { margin: 20px 0; font-size: 1.1rem; color: #fff; }
+.neon-text { color: var(--ayanokoji-gold); text-shadow: 0 0 15px var(--ayanokoji-gold); margin-bottom: 10px; }
+.neon-text-small { color: var(--ayanokoji-gold); font-size: 0.9rem; margin-bottom: 15px; }
+.subtitle { color: #d1c7bd; margin-bottom: 25px; }
+.modal-text { margin: 20px 0; font-size: 1.1rem; line-height: 1.6; color: #fff; }
 
 .play-trigger-btn {
-    width: 70px; height: 70px; border-radius: 50%;
-    background: radial-gradient(circle, var(--neon-gold), #8a4e22);
-    border: none; cursor: pointer; margin: 0 auto;
-    box-shadow: 0 0 25px var(--neon-gold); transition: 0.3s;
+    width: 85px; height: 85px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--ayanokoji-brown), var(--ayanokoji-gold));
+    border: none; cursor: pointer; display: flex; justify-content: center; align-items: center;
+    margin: 0 auto; box-shadow: 0 0 20px var(--ayanokoji-gold-glow); transition: 0.3s;
 }
-.play-trigger-btn:hover { transform: scale(1.1); box-shadow: 0 0 40px var(--neon-gold); }
+.play-trigger-btn:hover { transform: scale(1.1); box-shadow: 0 0 35px var(--ayanokoji-gold); }
 .play-triangle {
-    width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent;
-    border-left: 18px solid #0a0705; margin-left: 4px;
+    width: 0; height: 0; border-top: 12px solid transparent; border-bottom: 12px solid transparent;
+    border-left: 20px solid var(--ayanokoji-dark); margin-left: 3px;
 }
 
-.color-selection { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.color-selection { display: flex; flex-direction: column; gap: 10px; }
 .color-btn {
-    padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; font-weight: bold; transition: 0.3s;
+    padding: 10px; border-radius: 8px; border: 1px solid var(--ayanokoji-gold);
+    background: #2b1e16; color: #fff; cursor: pointer; font-weight: bold;
 }
-.white-btn:hover { background: #fff; color: #000; }
-.black-btn:hover { background: #000; color: #fff; border-color: #fff; }
+.color-btn:hover { background: var(--ayanokoji-gold); color: var(--ayanokoji-dark); }
 
-/* --- التلميحات --- */
 .move-dot {
-    width: 16px; height: 16px; background-color: rgba(0, 243, 255, 0.6);
+    width: 16px; height: 16px; background-color: rgba(0, 243, 255, 0.85);
     border-radius: 50%; position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -50%); pointer-events: none; z-index: 5;
+    box-shadow: 0 0 8px var(--neon-cyan);
 }
 .kill-cross {
     font-size: 22px; font-weight: 900; color: var(--neon-red);
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%); pointer-events: none; z-index: 5;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none; z-index: 5; text-shadow: 0 0 10px var(--neon-red);
 }
-.check-square { background: radial-gradient(circle, rgba(255, 42, 109, 0.5) 0%, rgba(255, 42, 109, 0.1) 100%) !important; }
-.highlight-selected { background: rgba(243, 198, 83, 0.3) !important; }
+.check-square {
+    background-color: rgba(255, 42, 109, 0.6) !important;
+    box-shadow: inset 0 0 12px var(--neon-red);
+}
+.highlight-selected {
+    background-color: rgba(243, 198, 83, 0.4) !important;
+    box-shadow: inset 0 0 10px var(--ayanokoji-gold);
+}
 
-@media (max-width: 700px) {
-    .main-container { flex-direction: column; gap: 15px; }
-    .left-side-panel { width: 100%; max-width: 400px; }
-    .opponent-card { flex-direction: row; text-align: right; padding: 15px; width: 100%; box-sizing: border-box; }
-    .avatar-container { width: 50px; height: 50px; margin-bottom: 0; margin-left: 15px; }
-    .opponent-card h3 { font-size: 1rem; }
-    .captured-section { display: none; } /* إخفاء القطع المأخوذة في الموبايل لتوفير المساحة */
+@media (max-width: 850px) {
+    .main-container { flex-direction: column; gap: 20px; }
+    .left-side-panel { width: 100%; max-width: 400px; flex-direction: row; justify-content: space-around; padding: 10px; }
+    .opponent-card { width: 100%; flex-direction: row; text-align: right; padding: 15px; }
+    .avatar-container { width: 60px; height: 60px; margin-bottom: 0; margin-left: 15px; }
+    .quote-text, .captured-section { display: none; }
     #board { width: 90vw !important; max-width: 400px; }
 }
