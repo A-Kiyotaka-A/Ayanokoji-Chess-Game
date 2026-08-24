@@ -91,10 +91,12 @@ window.addEventListener('DOMContentLoaded', () => {
                 const move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
 
                 if (move) {
-                    removeHighlights();
-                    board.position(game.fen());
+                    removeHighlights(); // تنظيف فوري لمنع تداخل العناصر
+                    board.position(game.fen()); // تحديث الرقعة
+                    
                     playSound(targetPiece ? 'capture' : 'move');
                     selectedSquare = null;
+                    
                     highlightCheckSquare();
                     updateStatus();
                     updateCapturedPieces();
